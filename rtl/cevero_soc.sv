@@ -61,6 +61,53 @@ module soc
 	logic           debug_halt_i_0;
 	logic           debug_resume_i_0;
 
+	// Core_1
+	
+	logic           clock_en_i_1  = 1;    // enable clock, otherwise it is gated
+	logic           test_en_i_1 = 0;     // enable all clock gates for testing
+	
+	// Core ID, Cluster ID and boot address are considered more or less static
+	logic [ 3:0]    core_id_i_1 = 1;
+	logic [ 5:0]    cluster_id_i_1 = 1;
+	logic [31:0]    boot_addr_i_1 = 0;
+	
+	// Instruction memory interface
+	logic           instr_req_o_1;
+	logic           instr_gnt_i_1;
+	logic           instr_rvalid_i_1;
+	logic [31:0]    instr_addr_o_1;
+	assign instr_addr_1 = instr_addr_o_1;
+	logic [31:0]    instr_rdata_i_1;
+	
+	// Data memory interface
+	logic           data_req_o_1;
+	logic           data_gnt_i_1;
+	logic           data_rvalid_i_1;
+	logic           data_we_o_1;
+	logic [3:0]     data_be_o_1;
+	logic [31:0]    data_addr_o_1;
+	logic [31:0]    data_wdata_o_1;
+	logic [31:0]    data_rdata_i_1;
+	logic           data_err_i_1;
+	
+	// Interrupt /* inputs
+	logic           irq_i_1;
+	logic [4:0]     irq_id_i_1;
+	logic           irq_ack_o_1;
+	logic [4:0]     irq_id_o_1;
+	
+	// Debug Interface
+	logic           debug_req_i_1;
+	logic           debug_gnt_o_1;
+	logic           debug_rvalid_o_1;
+	logic [14:0]    debug_addr_i_1;
+	logic           debug_we_i_1;
+	logic [31:0]    debug_wdata_i_1;
+	logic [31:0]    debug_rdata_o_1;
+	logic           debug_halted_o_1;
+	logic           debug_halt_i_1;
+	logic           debug_resume_i_1;
+
 	sp_ram inst_mem
 	(
 		.clk           (clk_i           ),
