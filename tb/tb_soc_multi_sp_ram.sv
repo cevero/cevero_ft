@@ -1,4 +1,4 @@
-module tb_soc_cevero;
+module tb_cevero_ft;
 
     logic        clk_i;
     logic        rst_ni;
