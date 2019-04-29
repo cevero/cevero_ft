@@ -21,6 +21,12 @@ module tb_cevero_ft;
         .instr_addr_0(instr_addr_0)
     );
 
+    initial begin
+        for(int i = 0; i != 255; i = i + 1)
+            dut.inst_mem.mem[i] = 32'bx;
+        $readmemb("ip/soc_components/soc_utils/fibonacci.bin", dut.inst_mem.mem);
+    end
+
     initial clk_i = 0;
     always #5 clk_i = ~clk_i;
       
