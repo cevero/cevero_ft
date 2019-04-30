@@ -12,9 +12,9 @@ module tb_cevero_ft;
         .clk_i          (clk_i       ),
         .rst_ni         (rst_ni      ),
         .fetch_enable_i (fetch_en_i  ),
-        .mem_flag       (mem_flag    ),
-        .mem_result     (mem_result  ),
-        .instr_addr_0   (instr_addr_0)
+        .mem_flag_o     (mem_flag    ),
+        .mem_result_o   (mem_result  ),
+        .instr_addr_o_0 (instr_addr_0)
     );
 
     initial begin
