@@ -40,8 +40,9 @@ module tb_cevero_ft;
         #20
         rst_ni = 1;
         fetch_en_i = 1;
-        #100
+        #182
         error = 1;
+        //dut.core_1.id_stage_i.registers_i.mem[6] = 33;
         #20 error = 0;
         
         #1300 $finish; // timeout if mem_flag never rises
