@@ -17,8 +17,10 @@ add wave -noupdate -radix binary :tb_cevero_ft:dut:ftm:shift_o
 add wave -noupdate -radix binary :tb_cevero_ft:dut:ftm:error
 add wave -noupdate -radix unsigned :tb_cevero_ft:dut:ftm:addr
 add wave -noupdate -radix unsigned :tb_cevero_ft:dut:ftm:data
+add wave -noupdate :tb_cevero_ft:dut:ftm:reset_o
+add wave -noupdate :tb_cevero_ft:dut:core_0:debug_halted_o
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {47 ps} 0}
+WaveRestoreCursors {{Cursor 1} {175 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 272
 configure wave -valuecolwidth 100
@@ -34,4 +36,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {925 ps}
+WaveRestoreZoom {80 ps} {312 ps}

@@ -17,6 +17,7 @@ module soc
     input  logic        error
 );
 
+
     //////////////////////////////////////////////////////////////////
     //                        ___        _                   _      //
     //   ___ ___  _ __ ___   / _ \   ___(_) __ _ _ __   __ _| |___  //
@@ -160,6 +161,8 @@ module soc
     // *** FT MODULE ASSIGNS *** //
     ///////////////////////////////
 
+    logic        rst_n;
+    logic        rst_crtl;
     logic        halt;
     logic        resume;
     logic        shift;
@@ -179,6 +182,7 @@ module soc
     assign debug_addr_1   = addr_tmp;
     assign debug_wdata_0  = data_tmp;
     assign debug_wdata_1  = data_tmp;
+    assign rst_ctrl = rst_n & rst_ni;
 
     // muxes
     assign addr_tmp = (shift) ? 15'h2000 : (15'h400 + addr_ftm);
@@ -254,6 +258,7 @@ module soc
         .data_o              ( data_ftm            ),
         .halt_o              ( halt                ),
         .resume_o            ( resume              ),
+        .reset_o             ( rst_n               ),
         .shift_o             ( shift               )
     );
 	  
@@ -268,7 +273,7 @@ module soc
         .regfile_wdata_o     ( regfile_wdata_0     ),
 
 		.clk_i               ( clk_i               ),
-		.rst_ni              ( rst_ni              ),
+		.rst_ni              ( rst_ctrl            ),
 		
 		.clock_en_i          ( clock_en_0          ),
 		.test_en_i           ( test_en_0           ),
@@ -326,7 +331,7 @@ module soc
         .regfile_wdata_o     ( regfile_wdata_1     ),
 
 		.clk_i               ( clk_i               ),
-		.rst_ni              ( rst_ni              ),
+		.rst_ni              ( rst_ctrl            ),
 		
 		.clock_en_i          ( clock_en_1          ),
 		.test_en_i           ( test_en_1           ),
