@@ -146,6 +146,28 @@ module soc
     assign data_gnt_1 = data_gnt_0;
     assign data_rdata_1 = data_rdata_0;
 
+    ///////////////////////////////
+    // *** FT MODULE ASSIGNS *** //
+    ///////////////////////////////
+
+    logic        halt;
+    logic        resume;
+    logic        shift;
+    logic [4:0]  addr_ftm;
+    logic [14:0] addr_tmp;
+    logic [31:0] data_ftm;
+
+    assign debug_halt_0   = halt;
+    assign debug_halt_1   = halt;
+    assign debug_resume_0 = resume;
+    assign debug_resume_1 = resume;
+    assign debug_we_0     = debug_halted_0;
+    assign debug_we_1     = debug_halted_1;
+    assign debug_addr_0   = addr_tmp;
+    assign debug_addr_1   = addr_tmp;
+    assign debug_wdata_0  = data_ftm;
+    assign debug_wdata_1  = data_ftm;
+
     ////////////////////////////////////////////////////////////////////
     //  _           _              _   _       _   _                  //
     // (_)_ __  ___| |_ __ _ _ __ | |_(_) __ _| |_(_) ___  _ __  ___  //     
@@ -188,6 +210,26 @@ module soc
 		.mem_flag            ( mem_flag_o          ),
 		.mem_result          ( mem_result_o        )
 	);
+
+    ft_module ftm
+    (
+        .clk_i               ( clk_i               ),
+
+        .we_a_i              ( regfile_we_0        ),
+        .we_b_i              ( regfile_we_1        ),
+        .addr_a_i            ( regfile_waddr_0     ),
+        .addr_b_i            ( regfile_waddr_1     ),
+        .data_a_i            ( regfile_wdata_0     ),
+        .data_b_i            ( regfile_wdata_1     ),
+        .spc_i               ( instr_addr_0        ),
+
+        .spc_o               ( data_ftm            ),
+        .addr_o              ( addr_ftm            ),
+        .data_o              ( data_ftm            ),
+        .halt_o              ( halt                ),
+        .resume_o            ( resume              ),
+        .shift_o             ( shift               )
+    );
 	  
 	zeroriscy_core 
 	#(
@@ -195,6 +237,10 @@ module soc
 		.RV32E               ( RV32E               ), 
 		.RV32M               ( RV32M               )
 	)core_0(
+        .regfile_we_o        ( regfile_we_0        ),
+        .regfile_waddr_o     ( regfile_waddr_0     ),
+        .regfile_wdata_o     ( regfile_wdata_0     ),
+
 		.clk_i               ( clk_i               ),
 		.rst_ni              ( rst_ni              ),
 		
@@ -248,6 +294,10 @@ module soc
 		.RV32E               ( RV32E               ), 
 		.RV32M               ( RV32M               )
 	)core_1(
+        .regfile_we_o        ( regfile_we_1        ),
+        .regfile_waddr_o     ( regfile_waddr_1     ),
+        .regfile_wdata_o     ( regfile_wdata_1     ),
+
 		.clk_i               ( clk_i               ),
 		.rst_ni              ( rst_ni              ),
 		
