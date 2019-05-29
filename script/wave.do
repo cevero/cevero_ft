@@ -7,8 +7,8 @@ add wave -noupdate -radix unsigned :tb_cevero_ft:dut:ftm:addr_a_i
 add wave -noupdate -radix unsigned :tb_cevero_ft:dut:ftm:addr_b_i
 add wave -noupdate -radix unsigned :tb_cevero_ft:dut:ftm:data_a_i
 add wave -noupdate -radix unsigned :tb_cevero_ft:dut:ftm:data_b_i
-add wave -noupdate -radix unsigned :tb_cevero_ft:dut:ftm:spc_i
-add wave -noupdate -radix unsigned :tb_cevero_ft:dut:ftm:spc_o
+add wave -noupdate -radix hexadecimal :tb_cevero_ft:dut:ftm:spc_i
+add wave -noupdate -radix hexadecimal :tb_cevero_ft:dut:ftm:spc_o
 add wave -noupdate -radix unsigned :tb_cevero_ft:dut:ftm:addr_o
 add wave -noupdate -radix unsigned :tb_cevero_ft:dut:ftm:data_o
 add wave -noupdate -radix binary :tb_cevero_ft:dut:ftm:halt_o

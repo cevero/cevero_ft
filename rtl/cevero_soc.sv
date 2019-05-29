@@ -190,9 +190,9 @@ module soc
 
     always_comb
         if (error)
-            test_data <= 32'd666;
+            test_data <= 32'b00000000011000110000001110110011;
             
-    assign data = (error) ? test_data : regfile_wdata_0;
+    assign data = (error) ? test_data : instr_rdata_0;
 
     ////////////////////////////////////////////////////////////////////
     //  _           _              _   _       _   _                  //
@@ -245,8 +245,7 @@ module soc
         .we_b_i              ( regfile_we_1        ),
         .addr_a_i            ( regfile_waddr_0     ),
         .addr_b_i            ( regfile_waddr_1     ),
-        //.data_a_i            ( regfile_wdata_0     ),
-        .data_a_i            ( data     ),
+        .data_a_i            ( regfile_wdata_0     ),
         .data_b_i            ( regfile_wdata_1     ),
         .spc_i               ( instr_addr_0        ),
 
@@ -282,7 +281,8 @@ module soc
 		.instr_gnt_i         ( instr_gnt_0         ),
 		.instr_rvalid_i      ( instr_rvalid_0      ),
 		.instr_addr_o        ( instr_addr_0        ),
-		.instr_rdata_i       ( instr_rdata_0       ),
+		//.instr_rdata_i       ( instr_rdata_0       ),
+		.instr_rdata_i       ( data       ),
 		
 		.data_req_o          ( data_req_0          ),
 		.data_gnt_i          ( data_gnt_0          ),
