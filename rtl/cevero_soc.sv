@@ -252,6 +252,7 @@ module soc
         .data_a_i            ( regfile_wdata_0     ),
         .data_b_i            ( regfile_wdata_1     ),
         .spc_i               ( instr_addr_0        ),
+        .halted_i            ( debug_halted_0      ),
 
         .spc_o               ( spc_ftm             ),
         .addr_o              ( addr_ftm            ),
