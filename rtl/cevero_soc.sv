@@ -12,8 +12,11 @@ module soc
 	input  logic        fetch_enable_i,
 	output logic [31:0] mem_flag_o,
 	output logic [31:0] mem_result_o,
-	output logic [31:0] instr_addr_o_0
+	output logic [31:0] instr_addr_o_0,
+
+    input  logic        error
 );
+
 
     //////////////////////////////////////////////////////////////////
     //                        ___        _                   _      //
@@ -158,12 +161,16 @@ module soc
     // *** FT MODULE ASSIGNS *** //
     ///////////////////////////////
 
+    logic        rst_n;
+    logic        rst_crtl;
     logic        halt;
     logic        resume;
     logic        shift;
     logic [4:0]  addr_ftm;
     logic [14:0] addr_tmp;
     logic [31:0] data_ftm;
+    logic [31:0] data_tmp;
+    logic [31:0] spc_ftm;
 
     assign debug_halt_0   = halt;
     assign debug_halt_1   = halt;
@@ -173,8 +180,23 @@ module soc
     assign debug_we_1     = debug_halted_1;
     assign debug_addr_0   = addr_tmp;
     assign debug_addr_1   = addr_tmp;
-    assign debug_wdata_0  = data_ftm;
-    assign debug_wdata_1  = data_ftm;
+    assign debug_wdata_0  = data_tmp;
+    assign debug_wdata_1  = data_tmp;
+    assign rst_ctrl = rst_n & rst_ni;
+
+    // muxes
+    assign addr_tmp = (shift) ? 15'h2000 : (15'h400 + addr_ftm);
+    assign data_tmp = (shift) ? spc_ftm : data_ftm;
+
+    // ***** test ***** //
+    logic [31:0] data;
+    logic [31:0] test_data;
+
+    always_comb
+        if (error)
+            test_data <= 32'b00000000011000110000001110110011;
+            
+    assign data = (error) ? test_data : instr_rdata_0;
 
     ////////////////////////////////////////////////////////////////////
     //  _           _              _   _       _   _                  //
@@ -230,12 +252,14 @@ module soc
         .data_a_i            ( regfile_wdata_0     ),
         .data_b_i            ( regfile_wdata_1     ),
         .spc_i               ( instr_addr_0        ),
+        .halted_i            ( debug_halted_0      ),
 
-        .spc_o               ( data_ftm            ),
+        .spc_o               ( spc_ftm             ),
         .addr_o              ( addr_ftm            ),
         .data_o              ( data_ftm            ),
         .halt_o              ( halt                ),
         .resume_o            ( resume              ),
+        .reset_o             ( rst_n               ),
         .shift_o             ( shift               )
     );
 	  
@@ -250,7 +274,7 @@ module soc
         .regfile_wdata_o     ( regfile_wdata_0     ),
 
 		.clk_i               ( clk_i               ),
-		.rst_ni              ( rst_ni              ),
+		.rst_ni              ( rst_ctrl            ),
 		
 		.clock_en_i          ( clock_en_0          ),
 		.test_en_i           ( test_en_0           ),
@@ -263,7 +287,8 @@ module soc
 		.instr_gnt_i         ( instr_gnt_0         ),
 		.instr_rvalid_i      ( instr_rvalid_0      ),
 		.instr_addr_o        ( instr_addr_0        ),
-		.instr_rdata_i       ( instr_rdata_0       ),
+		//.instr_rdata_i       ( instr_rdata_0       ),
+		.instr_rdata_i       ( data       ),
 		
 		.data_req_o          ( data_req_0          ),
 		.data_gnt_i          ( data_gnt_0          ),
@@ -307,7 +332,7 @@ module soc
         .regfile_wdata_o     ( regfile_wdata_1     ),
 
 		.clk_i               ( clk_i               ),
-		.rst_ni              ( rst_ni              ),
+		.rst_ni              ( rst_ctrl            ),
 		
 		.clock_en_i          ( clock_en_1          ),
 		.test_en_i           ( test_en_1           ),

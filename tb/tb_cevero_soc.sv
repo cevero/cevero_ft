@@ -7,6 +7,8 @@ module tb_cevero_ft;
     logic [31:0] mem_result;
     logic [31:0] instr_addr_0;
 
+    logic        error;
+
     soc dut
     (
         .clk_i          (clk_i       ),
@@ -14,7 +16,9 @@ module tb_cevero_ft;
         .fetch_enable_i (fetch_en_i  ),
         .mem_flag_o     (mem_flag    ),
         .mem_result_o   (mem_result  ),
-        .instr_addr_o_0 (instr_addr_0)
+        .instr_addr_o_0 (instr_addr_0),
+
+        .error          (error       )
     );
 
     initial begin
@@ -32,12 +36,16 @@ module tb_cevero_ft;
          
         rst_ni = 0;
         fetch_en_i = 0;
-        #20;
+        error = 0;
+        #20
         rst_ni = 1;
         fetch_en_i = 1;
-        #10;
+        #182
+        error = 1;
+        //dut.core_1.id_stage_i.registers_i.mem[6] = 33;
+        #20 error = 0;
         
-        #1000 $finish; // timeout if mem_flag never rises
+        #1300 $finish; // timeout if mem_flag never rises
     end
     
     always @*
