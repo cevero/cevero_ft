@@ -23,6 +23,10 @@ module soc
     //  \___\___/|_|  \___|  \___/  |___/_|\__, |_| |_|\__,_|_|___/ //
     //                                     |___/                    //
     //////////////////////////////////////////////////////////////////
+
+    logic           regfile_we_0;
+    logic [4:0]     regfile_waddr_0;
+    logic [31:0]    regfile_wdata_0;
 	
 	logic           clock_en_0  = 1;    // enable clock, otherwise it is gated
 	logic           test_en_0 = 0;     // enable all clock gates for testing
@@ -76,6 +80,10 @@ module soc
     //  \___\___/|_|  \___| |_| |___/_|\__, |_| |_|\__,_|_|___/ //
     //                                 |___/                    //
     //////////////////////////////////////////////////////////////
+
+    logic           regfile_we_1;
+    logic [4:0]     regfile_waddr_1;
+    logic [31:0]    regfile_wdata_1;
 
 	logic           clock_en_1  = 1;    // enable clock, otherwise it is gated
 	logic           test_en_1 = 0;     // enable all clock gates for testing
