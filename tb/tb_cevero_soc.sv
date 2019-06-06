@@ -33,11 +33,13 @@ module tb_cevero_ft;
     initial begin
         $display("time | inst_addr_0 | mem_flag | mem_result |\n");
         $monitor ("%4t | %11h | %8b | %10d |", $time, instr_addr_0, mem_flag, mem_result);
-         
+        rst_ni = 1;
+        fetch_en_i = 1;
+        #10 
         rst_ni = 0;
         fetch_en_i = 0;
         error = 0;
-        #20
+        #40
         rst_ni = 1;
         fetch_en_i = 1;
         #100
