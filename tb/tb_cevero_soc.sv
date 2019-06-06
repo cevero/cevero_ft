@@ -33,19 +33,24 @@ module tb_cevero_ft;
     initial begin
         $display("time | inst_addr_0 | mem_flag | mem_result |\n");
         $monitor ("%4t | %11h | %8b | %10d |", $time, instr_addr_0, mem_flag, mem_result);
-         
+        rst_ni = 1;
+        fetch_en_i = 1;
+        #10 
         rst_ni = 0;
         fetch_en_i = 0;
         error = 0;
-        #20
+        #40
         rst_ni = 1;
         fetch_en_i = 1;
         #182
         error = 1;
         //dut.core_1.id_stage_i.registers_i.mem[6] = 33;
         #20 error = 0;
+        #600
+        error = 1;
+        #20 error = 0;
         
-        #1300 $finish; // timeout if mem_flag never rises
+        #1600 $finish; // timeout if mem_flag never rises
     end
     
     always @*
