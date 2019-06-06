@@ -10,8 +10,6 @@ module soc
 	input  logic        clk_i,
 	input  logic        rst_ni,
 	input  logic        fetch_enable_i,
-	output logic [31:0] mem_flag_o,
-	output logic [31:0] mem_result_o,
 	output logic [31:0] instr_addr_o_0,
 
     input  logic        error
@@ -207,38 +205,42 @@ module soc
     //                                                                //
     ////////////////////////////////////////////////////////////////////
 
-	sp_ram inst_mem
-	(
-		.clk                 ( clk_i               ),
-		.rst_n               ( 1'b1                ),
+	sp_ram
+	#(
+		.ADDR_WIDTH  (32), 
+		.DATA_WIDTH (32), 
+		.NUM_WORDS  (256)
+    ) inst_mem (
+		.clk      (clk_i         ),
+		.rst_n    (rst_ni        ),
 		
-		.port_req_i          ( instr_req_0         ),
-		.port_gnt_o          ( instr_gnt_0         ),
-		.port_rvalid_o       ( instr_rvalid_0      ),
-		.port_addr_i         ( instr_addr_0        ),
-		.port_we_i           ( 1'b0                ),
-		.port_rdata_o        ( instr_rdata_0       ),
-		.port_wdata_i        ( 32'b0               ),
-		
-		.mem_flag            (                     ),
-		.mem_result          (                     )
+		.req_i    (instr_req_0   ),
+		.gnt_o    (instr_gnt_0   ),
+		.rvalid_o (instr_rvalid_0),
+		.addr_i   (instr_addr_0  ),
+		.we_i     (1'b0          ),
+        .be_i     (4'b1111       ),
+		.rdata_o  (instr_rdata_0 ),
+		.wdata_i  (32'b0         )
 	);
 	
-	sp_ram data_mem
-	(
-		.clk                 ( clk_i               ),
-		.rst_n               ( 1'b1                ),
+	sp_ram
+	#(
+		.ADDR_WIDTH  (32), 
+		.DATA_WIDTH (32), 
+		.NUM_WORDS  (256)
+    ) data_mem (
+		.clk      (clk_i        ),
+		.rst_n    (rst_ni       ),
 		
-		.port_req_i          ( data_req_0          ),
-		.port_gnt_o          ( data_gnt_0          ),
-		.port_rvalid_o       ( data_rvalid_0       ),
-		.port_addr_i         ( data_addr_0         ),
-		.port_we_i           ( data_we_0           ),
-		.port_rdata_o        ( data_rdata_0        ),
-		.port_wdata_i        ( data_wdata_0        ),
-		
-		.mem_flag            ( mem_flag_o          ),
-		.mem_result          ( mem_result_o        )
+		.req_i    (data_req_0   ),
+		.gnt_o    (data_gnt_0   ),
+		.rvalid_o (data_rvalid_0),
+		.addr_i   (data_addr_0  ),
+		.we_i     (data_we_0    ),
+        .be_i     (data_be_0    ),
+		.rdata_o  (data_rdata_0 ),
+		.wdata_i  (data_wdata_0 )
 	);
 
     ft_module ftm
