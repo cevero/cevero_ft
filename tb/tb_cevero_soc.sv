@@ -20,7 +20,7 @@ module tb_cevero_ft;
     );
 
     initial begin
-        $readmemb("ip/soc_components/soc_utils/fibonacci_byte.bin", dut.inst_mem.mem);
+        $readmemb("ip/soc_components/soc_utils/fibonacci.bin", dut.inst_mem.mem);
     end
 
     initial clk_i = 0;
