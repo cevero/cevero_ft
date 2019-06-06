@@ -45,8 +45,11 @@ module tb_cevero_ft;
         #100
         error = 1;
         #20 error = 0;
+        #600
+        error = 1;
+        #20 error = 0;
         
-        #1300 $finish; // timeout if mem_flag never rises
+        #1600 $finish; // timeout if mem_flag never rises
     end
     
     always @*
