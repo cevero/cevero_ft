@@ -1,16 +1,51 @@
-//`include "../ip/soc_components/sp_ram/rtl/sp_ram.sv"
-//`include "ip/ft_system/ft_module/rtl/ft_module.sv"
-
-module soc
-#()(
+module cevero_ft_core
+(
+	// Clock and Reset
 	input  logic        clk_i,
 	input  logic        rst_ni,
-	input  logic        fetch_enable_i,
+
 	output logic [31:0] instr_addr_o_0,
 
-    input  logic        error
-);
+	input  logic        test_en_i,     // enable all clock gates for testing
 
+	// Core ID, Cluster ID and boot address are considered more or less static
+	input  logic [31:0] hart_id_i,
+	input  logic [31:0] boot_addr_i,
+
+	// Instruction memory interface
+	output logic        instr_req_o,
+	input  logic        instr_gnt_i,
+	input  logic        instr_rvalid_i,
+	output logic [31:0] instr_addr_o,
+	input  logic [31:0] instr_rdata_i,
+	input  logic        instr_err_i,
+
+	// Data memory interface
+	output logic        data_req_o,
+	input  logic        data_gnt_i,
+	input  logic        data_rvalid_i,
+	output logic        data_we_o,
+	output logic [3:0]  data_be_o,
+	output logic [31:0] data_addr_o,
+	output logic [31:0] data_wdata_o,
+	input  logic [31:0] data_rdata_i,
+	input  logic        data_err_i,
+
+    input  logic        irq_software_i,
+    input  logic        irq_timer_i,
+    input  logic        irq_external_i,
+    input  logic [14:0] irq_fast_i,
+    input  logic        irq_nm_i, 
+
+	// Debug Interface
+	input  logic        debug_req_i,
+
+	// CPU Control Signals
+    input  logic        fetch_enable_i,
+    output logic        alert_minor_o,
+    output logic        alert_major_o,
+    output logic        core_sleep_o
+);
 
     //////////////////////////////////////////////////////////////////
     //                        ___        _                   _      //
@@ -24,12 +59,15 @@ module soc
     logic           regfile_we_0;
     logic [4:0]     regfile_waddr_0;
     logic [31:0]    regfile_wdata_0;
+	logic [31:0]    pc_o_0;
+	logic 		    recovery_done_0 ;
 	
-	logic           test_en_0 = 0;     // enable all clock gates for testing
+	logic           clock_en_0; //  = 1;    // enable clock, otherwise it is gated
+	logic           test_en_0; // = 0;     // enable all clock gates for testing
 	
 	// Core ID, Cluster ID and boot address are considered more or less static
-	logic [ 3:0]    hart_id_0 = 0;
-	logic [31:0]    boot_addr_0 = 0;
+	logic [31:0]    hart_id_0;
+	logic [31:0]    boot_addr_0;
 	
 	// Instruction memory interface
 	logic           instr_req_0;
@@ -50,6 +88,7 @@ module soc
 	logic [31:0]    data_rdata_0;
 	logic           data_err_0;
 	
+	
 	// Debug Interface
 	logic           debug_req_0;
 
@@ -65,12 +104,14 @@ module soc
     logic           regfile_we_1;
     logic [4:0]     regfile_waddr_1;
     logic [31:0]    regfile_wdata_1;
+	logic [31:0]    pc_o_1;
+	logic 		    recovery_done_1;
 
-	logic           test_en_1 = 0;     // enable all clock gates for testing
+	logic           test_en_1; // = 0;     // enable all clock gates for testing
 	
 	// Core ID, Cluster ID and boot address are considered more or less static
-	logic [ 3:0]    hart_id_1 = 1;
-	logic [31:0]    boot_addr_1 = 0;
+	logic [31:0]    hart_id_1;
+	logic [31:0]    boot_addr_1;
 	
 	// Instruction memory interface
 	logic           instr_req_1;
@@ -93,7 +134,24 @@ module soc
 	
 	// Debug Interface
 	logic           debug_req_1;
-	logic recover;
+
+	//================================
+	//			 FTM SIGNALS
+	//================================
+	logic recovery_done;
+	logic do_recover;
+	logic reset_cores;
+	logic recovering;
+
+	logic        ftm_data_req;
+	logic        ftm_data_gnt;
+	logic        ftm_data_rvalid;
+	logic        ftm_data_we;
+	logic [3:0]  ftm_data_be;
+	logic [31:0] ftm_data_addr;
+	logic [31:0] ftm_data_wdata;
+	logic [31:0] ftm_data_rdata;
+	logic        ftm_data_err;
 
     ///////////////////////////////////////
     //                _                  //
@@ -105,35 +163,112 @@ module soc
     //                                   //
     ///////////////////////////////////////
 
-    // assigns core 0
-	assign instr_addr_o_0 = instr_addr_0;
-    
+	//TODO: review these assigns
+	assign test_en_0 = test_en_i;     // enable all clock gates for testing
+
+	// Core ID, Cluster ID and boot address are considered more or less static
+	assign hart_id_0 = hart_id_i;
+	assign boot_addr_0 = boot_addr_i;
+
+	// Instruction memory interface
+	assign instr_req_o = instr_req_0;
+	assign instr_gnt_0 = instr_gnt_i;
+	assign instr_rvalid_0 = instr_rvalid_i;
+	assign instr_addr_o = instr_addr_0;
+	assign instr_rdata_0 = instr_rdata_i;
+	assign instr_err_0 = instr_err_i;
+
+	// Data memory interface
+	/*
+	assign data_req_o = data_req_0;
+	assign data_gnt_0 = data_gnt_i;
+	assign data_rvalid_0 = data_rvalid_i;
+	assign data_we_o = data_we_0;
+	assign data_be_o = data_be_0;
+	assign data_addr_o = data_addr_0;
+	assign data_wdata_o = data_wdata_0;
+	assign data_rdata_0 = data_rdata_i;
+	assign data_err_0 = data_err_i;
+	*/
+
+	assign debug_req_0 = do_recover;
+
     // --- assigns core 1 ---
+
+	assign test_en_1 = test_en_0;     // enable all clock gates for testing
+
+	// Core ID, Cluster ID and boot address are considered more or less static
+	assign hart_id_1 = hart_id_0;
+	assign boot_addr_1 = boot_addr_0;
 
     // instr memory
     assign instr_rdata_1 = instr_rdata_0;
     assign instr_gnt_1 = instr_gnt_0;
     assign instr_rvalid_1 = instr_rvalid_0;
+	assign instr_err_1 = instr_err_0;
 
     // data memory
     assign data_rvalid_1 = data_rvalid_0;
     assign data_gnt_1 = data_gnt_0;
     assign data_rdata_1 = data_rdata_0;
+    assign data_err_1 = data_err_0;
 
-	// Tie debug reqs
-	assign debug_req_1 = recover;
-	assign debug_req_0 = recover;
+	assign debug_req_1 = debug_req_0;
+
+	// Selection of data memory / FTM memory
+	always_comb begin
+		if (recovering) begin
+			//signals to data memory
+			data_req_o 	 	= 1'b0;
+			data_we_o  	 	= 1'b0;
+			data_be_o  	 	= 4'b1111;
+			data_addr_o  	= 1'b0;
+			data_wdata_o 	= 1'b0;
+
+			//signals ftm memory
+			ftm_data_req 	= data_req_0;
+			ftm_data_we 	= data_we_0;
+			ftm_data_be 	= data_be_0;
+			ftm_data_addr 	= data_addr_0;
+			ftm_data_wdata 	= data_wdata_0;
+
+			//signals ftm memory
+			data_gnt_0    	= ftm_data_gnt;
+			data_rvalid_0 	= ftm_data_rvalid; 
+			data_rdata_0  	= ftm_data_rdata; 
+			data_err_0    	= ftm_data_err; 
+		end
+		else begin
+			//signals to data memory
+			data_req_o 	 	= data_req_0;  
+			data_we_o  	 	= data_we_0;   
+			data_be_o  	 	= data_be_0;  
+			data_addr_o  	= data_addr_0; 
+			data_wdata_o 	= data_wdata_0;
+
+			//signals ftm memory
+			ftm_data_req 	= 1'b0;
+			ftm_data_we 	= 1'b0;
+			ftm_data_be 	= 4'b1111;
+			ftm_data_addr 	= 1'b0;
+			ftm_data_wdata 	= 1'b0;
+
+			//signals ftm memory
+			data_gnt_0    	= data_gnt_i;
+			data_rvalid_0 	= data_rvalid_i; 
+			data_rdata_0  	= data_rdata_i; 
+			data_err_0    	= data_err_i; 
+		end
+	end
 
 
-    // ***** Error injection ***** //
-    logic [31:0] data;
-    logic [31:0] test_data;
 
-    always_comb
-        if (error)
-            test_data <= 32'b00000000011000110000001110110011;
-            
-    assign data = (error) ? test_data : instr_rdata_0;
+    ///////////////////////////////
+    // *** FT MODULE ASSIGNS *** //
+    ///////////////////////////////
+
+
+	assign recovery_done = recovery_done_0;//& recovery_done_1
 
     ////////////////////////////////////////////////////////////////////
     //  _           _              _   _       _   _                  //
@@ -143,50 +278,6 @@ module soc
     // |_|_| |_|___/\__\__,_|_| |_|\__|_|\__,_|\__|_|\___/|_| |_|___/ //
     //                                                                //
     ////////////////////////////////////////////////////////////////////
-
-	sp_ram
-	#(
-		.ADDR_WIDTH (32), 
-		.DATA_WIDTH (32), 
-		.NUM_WORDS  (256)
-    ) inst_mem (
-		.clk      (clk_i         ),
-		.rst_n    (rst_ni        ),
-		
-		.req_i    (instr_req_0   ),
-		.gnt_o    (instr_gnt_0   ),
-		.rvalid_o (instr_rvalid_0),
-		.addr_i   (instr_addr_0  ),
-		.we_i     (1'b0          ),
-        .be_i     (4'b1111       ),
-		.rdata_o  (instr_rdata_0 ),
-		.wdata_i  (32'b0         )
-	);
-
-
-	//RECOVERY MEM MAPPING:
-	// 0-31 GPRs
-	// 32 PC
-	// 33-   CSRs
-
-	sp_ram
-	#(
-		.ADDR_WIDTH (32), 
-		.DATA_WIDTH (32), 
-		.NUM_WORDS  (256)
-    ) data_mem (
-		.clk      (clk_i        ),
-		.rst_n    (rst_ni       ),
-		
-		.req_i    (data_req_0   ),
-		.gnt_o    (data_gnt_0   ),
-		.rvalid_o (data_rvalid_0),
-		.addr_i   (data_addr_0  ),
-		.we_i     (data_we_0    ),
-        .be_i     (data_be_0    ),
-		.rdata_o  (data_rdata_0 ),
-		.wdata_i  (data_wdata_0 )
-	);
 
     ft_module ftm
     (
@@ -199,11 +290,28 @@ module soc
         .data_a_i            ( regfile_wdata_0     ),
         .data_b_i            ( regfile_wdata_1     ),
 
-        .done_i              (         ), //TODO: signal to  indicate the end of the debugmode
-        .reset_o             ( rst_n               ),
-        .recover_o           ( recover             )
+        .pc_i                ( pc_o_0        	   ),
+		.enable_i            ( 1'b1          ),
+		
+
+		// Data memory interface
+		.data_req_i			(ftm_data_req),
+		.data_gnt_o			(ftm_data_gnt),
+		.data_rvalid_o		(ftm_data_rvalid),
+		.data_we_i			(ftm_data_we),
+		.data_be_i			(ftm_data_be),
+		.data_addr_i		(ftm_data_addr),
+		.data_wdata_i		(ftm_data_wdata),
+		.data_rdata_o		(ftm_data_rdata),
+		.data_err_o			(ftm_data_err),
+
+		//control signals
+		.done_i				(recovery_done), 	
+		.recover_o			(do_recover),
+		.reset_o 			(reset_cores),
+		.recovering_o		(recovering)
     );
-	  
+
 	ibex_core 
 	#(
 		.DmHaltAddr		     ( 32'h00000000        )
@@ -211,20 +319,22 @@ module soc
         .regfile_we_o        ( regfile_we_0        ),
         .regfile_waddr_o     ( regfile_waddr_0     ),
         .regfile_wdata_o     ( regfile_wdata_0     ),
+		.pc_o				 ( pc_o_0			   ),
+		.recovery_done_o	 ( recovery_done_0     ),
 
 		.clk_i               ( clk_i               ),
-		.rst_ni              ( rst_ctrl            ),
+		.rst_ni              ( reset_cores | rst_ni ),
 		.test_en_i           ( test_en_0           ),
 		
-		.hart_id_i           ( hart_id_0          ),
+		.hart_id_i           ( hart_id_0           ),
 		.boot_addr_i         ( boot_addr_0         ),
 		
 		.instr_req_o         ( instr_req_0         ),
 		.instr_gnt_i         ( instr_gnt_0         ),
 		.instr_rvalid_i      ( instr_rvalid_0      ),
 		.instr_addr_o        ( instr_addr_0        ),
-		.instr_rdata_i       ( data       ),
-		.instr_err_i    	 ( instr_err_0),
+		.instr_rdata_i       ( instr_rdata_0       ),
+		.instr_err_i    	 ( instr_err_0		   ),
 		
 		.data_req_o          ( data_req_0          ),
 		.data_gnt_i          ( data_gnt_0          ),
@@ -237,11 +347,11 @@ module soc
 		.data_err_i          ( data_err_0          ),
 
 		// Interrupt inputs
-		.irq_software_i (1'b0),
-		.irq_timer_i    (1'b0),
-		.irq_external_i (1'b0),
-		.irq_fast_i     (15'b0),
-		.irq_nm_i       (1'b0),
+		.irq_software_i (irq_software_i),
+		.irq_timer_i    (irq_timer_i),
+		.irq_external_i (irq_external_i),
+		.irq_fast_i     (irq_fast_i),
+		.irq_nm_i       (irq_nm_i),
 
 		// Debug interface
 		.debug_req_i    (debug_req_0),
@@ -252,7 +362,6 @@ module soc
 		.alert_major_o  (),
 		.core_sleep_o   ()
 	);
-
 	ibex_core 
 	#(
 		.DmHaltAddr		     ( 32'h00000000        )
@@ -260,9 +369,11 @@ module soc
         .regfile_we_o        ( regfile_we_1        ),
         .regfile_waddr_o     ( regfile_waddr_1     ),
         .regfile_wdata_o     ( regfile_wdata_1     ),
+		.pc_o				 ( pc_o_1),
+		.recovery_done_o	 ( recovery_done_1),
 
 		.clk_i               ( clk_i               ),
-		.rst_ni              ( rst_ctrl            ),
+		.rst_ni              ( reset_cores | rst_ni ),
 		.test_en_i           ( test_en_1           ),
 
 		.hart_id_i           ( hart_id_1           ),
@@ -288,12 +399,11 @@ module soc
 		.debug_req_i         ( debug_req_1         ),
 
 		// Interrupt inputs
-		.irq_software_i (1'b0),
-		.irq_timer_i    (1'b0),
-		.irq_external_i (1'b0),
-		.irq_fast_i     (15'b0),
-		.irq_nm_i       (1'b0),
-
+		.irq_software_i (irq_software_i),
+		.irq_timer_i    (irq_timer_i),
+		.irq_external_i (irq_external_i),
+		.irq_fast_i     (irq_fast_i),
+		.irq_nm_i       (irq_nm_i),
 
 		// Special control signals
 		.fetch_enable_i (fetch_enable_i),
@@ -301,5 +411,5 @@ module soc
 		.alert_major_o  (),
 		.core_sleep_o   ()
 	);
-	
+
 endmodule

@@ -10,6 +10,8 @@ CC = vlog
 SIM = vsim
 TOP_LEVEL = $(shell basename `pwd` | tr '-' '_')
 WORK = work
+IBEXDIR=ip/ibex/rtl
+SVFILES=`ls $(IBEXDIR)/*.sv | awk '!/ibex_pkg.sv/ {print $0}'`
 
 default: all
 
@@ -22,15 +24,22 @@ compile:
         vmap $(WORK) $(WORK); \
     fi
 # Compiles all verilog files in the "default" folders
-	$(CC) -sv -mfcu ip/zero-riscy/include/*.sv ip/zero-riscy/*.sv \
-		ip/soc_components/soc_utils/*.sv rtl/*.sv tb/*.sv +incdir+ip/zero-riscy/include
+	$(CC) -sv -mfcu $(IBEXDIR)/ibex_pkg.sv $(SVFILES)\
+		ip/soc_components/soc_utils/*.sv \
+		ftm/rtl/*.sv \
+		ftm/tb/*.sv \
+		rtl/*.sv \
+		tb/*.sv \
+		+incdir+ip/ibex/vendor/lowrisc_ip/ip/prim/rtl \
+		+incdir+ip/ibex/dv/fcov  \
+		+incdir+dv/uvm/core_ibex/common/prim
 
 # Executes the simulation in batch mode using the commands on the script/run.do
 # file.
 run:
 	$(SIM) -batch -do script/run.do work.tb_$(TOP_LEVEL)
 wave:
-	$(SIM) -do script/run_wave.do work.tb_$(TOP_LEVEL)
+	$(SIM) -voptargs="+acc" -do script/run_wave.do work.tb_$(TOP_LEVEL)
 
 # Removes all generated files
 clean:

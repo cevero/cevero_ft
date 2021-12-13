@@ -1,9 +1,6 @@
 [submodule "ip/soc_components"]
 	path = ip/soc_components
 	url = https://github.com/cevero/soc_components.git
-[submodule "ip/ft_system"]
-	path = ip/ft_system
-	url = https://github.com/cevero/ft_system.git
 [submodule "ip/ibex"]
 	path = ip/ibex
 	url = https://github.com/cevero/ibex.git
