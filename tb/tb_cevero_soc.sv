@@ -44,6 +44,8 @@ logic			core_sleep;
 logic [31:0] mem_flag;
 logic [31:0] mem_result;
 
+logic			force_error;
+
 // ======  MODULES INSTANCES  ===========
 cevero_ft_core core(
 	.clk_i					(clk),
@@ -52,9 +54,10 @@ cevero_ft_core core(
 	.instr_addr_o_0			(instr_addr_0),
 
 	.test_en_i				(1'b0),    
+	.force_error_i			(force_error),    
 
 	.hart_id_i				(32'b0),
-	.boot_addr_i			(32'b0),
+	.boot_addr_i			(32'h0),
 
 	.instr_req_o			(instr_req),
 	.instr_gnt_i			(instr_gnt),
@@ -71,7 +74,7 @@ cevero_ft_core core(
 	.data_addr_o			(data_addr),
 	.data_wdata_o			(data_wdata),
 	.data_rdata_i			(data_rdata),
-	.data_err_i				(data_err),
+	.data_err_i				(1'b0),
 
     .irq_software_i			(1'b0),
     .irq_timer_i			(1'b0),
@@ -91,7 +94,7 @@ cevero_ft_core core(
 	#(
 		.ADDR_WIDTH (32), 
 		.DATA_WIDTH (32), 
-		.NUM_WORDS  (256)
+		.NUM_WORDS  (512)
     ) inst_mem (
 		.clk      (clk         ),
 		.rst_n    (rst_n        ),
@@ -127,33 +130,48 @@ cevero_ft_core core(
 
 	assign mem_flag = data_mem.mem[0];
     assign mem_result = data_mem.mem[1]; // word addr
-
+int expected_result;
     initial begin
-        $readmemb("ip/soc_components/soc_utils/fibonacci_byte.bin", inst_mem.mem );
+        $readmemb("./tb/program2.bin", inst_mem.mem );
+		expected_result = 3628800;
     end
 
     initial clk = 0;
-    always #5 clk <= ~clk;
+    always #5 clk = ~clk;
+int delay;
 
     initial begin
 		core.core_0.instr_fetch_err = 0;
 		core.core_1.instr_fetch_err = 0;
-	    $display(" time  | clk | inst_addr  |   inst     |   err      |     pc     |     inst      |\n");
+		force_error = 0;
+		delay = 220;
+		$display("delay: %d",delay);
 
-		$monitor(" %5t   | %d  |    %d  	|     %d     |     %h     |     %h        |",  $time, clk,mem_flag,mem_result,instr_addr,instr_req);
+
+	    //$display(" time  | clk | mem_flag | mem_result | instr_addr | instr_req |\n");
+
+		$monitor(" %5t | %d | %d | %d | %h | %h |",  $time, clk,mem_flag,mem_result,instr_addr,instr_req);
 
         rst_n = 0;
         fetch_enable = 0;
-        #40
+#40
         rst_n = 1;
         fetch_enable = 1;
-        
+		// = $urandom_range(200,800);
+		
+#delay
+		force_error = 0;
+		core.can_inject_error = 1;
+#15
+		force_error = 0;
+       
         #1600 $finish; 
     end
 	
-	always @* begin
+	always @* begin : finish_condition
 		if (mem_flag == 1'b1) begin
-			$display("result: %d\n",mem_result);
+			$display("result: %d",mem_result);
+			$display("expected: %d\n",expected_result);
 			#5 $finish;
 		end
 	end

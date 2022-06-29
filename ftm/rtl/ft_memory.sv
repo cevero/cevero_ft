@@ -18,11 +18,18 @@ module ft_memory
 	output  logic        		  err_o
 );
 
-
-localparam int PC_ADDR = 4*32;
+localparam int PC_ADDR = 32;
 
 logic [3:0][7:0] mem[256];
 logic [3:0][7:0] rdaddr_reg;
+
+initial begin
+	//int i;
+	for(int i=0;i<32;i=i+1) begin
+		mem[i] = 32'h0;
+		$display("mem[%d] = %h",i,ftmem.mem[i]);
+	end
+end
 
 assign data = data_rf_i;
 
@@ -33,10 +40,20 @@ always @(posedge clk_i) begin
 	end
 
 	mem[PC_ADDR] = pc_i;
+
+	rdata_o  <= mem[addr_i >> 2] ;
 end
 
+assign gnt_o = req_i;
 
 always_ff @(posedge clk_i or negedge rst_ni) begin
+
+	if (rst_ni == 1'b0)
+		rvalid_o <= 1'b0;
+	else
+		rvalid_o <= gnt_o;
+
+/*
 	if(req_i)
 		rdaddr_reg <= addr_i>>2;
 
@@ -44,6 +61,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
 	rvalid_o <= gnt_o;
 
 	rdata_o  <= mem[rdaddr_reg] ;
+	*/
 end
 
 

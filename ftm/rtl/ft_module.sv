@@ -30,6 +30,7 @@ module ft_module
 
 	//control signals
 	input  logic		done_i, 	
+	input  logic		force_error_i, 	
 	output logic		recover_o, 	
     output logic        reset_o,
     output logic        recovering_o
@@ -41,7 +42,6 @@ logic [4:0] addr;
 logic error;
 logic we_ftmem;
 logic recovery_done;
-logic recover; // dbg req signal
 
 assign we_ftmem = we_a_i & we_b_i & ~error;
 
@@ -77,7 +77,8 @@ ft_comparator ftcomp(
 
     .addr_o		(addr),
     .data_o		(data),
-    .error_o	(error)
+    .error_o	(error),
+    .force_i (force_error_i)//Just for debug
 );
 
 //control
@@ -86,8 +87,9 @@ ft_control ftctrl(
 	.error_i		(error),
 	.enable_i		(enable_i),
 	.recovery_done_i(recovery_done),
+	.force_error_i (force_error_i),
 	.reset_cores_no	(reset_o),
-	.recover_o		(recover),
+	.recover_o		(recover_o),
 	.recovering_o	(recovering_o)
 );
 

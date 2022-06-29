@@ -5,6 +5,7 @@ module cevero_ft_core
 	input  logic        rst_ni,
 
 	output logic [31:0] instr_addr_o_0,
+	input  logic        force_error_i,     // enable all clock gates for testing
 
 	input  logic        test_en_i,     // enable all clock gates for testing
 
@@ -219,20 +220,20 @@ module cevero_ft_core
 	always_comb begin
 		if (recovering) begin
 			//signals to data memory
-			data_req_o 	 	= 1'b0;
-			data_we_o  	 	= 1'b0;
-			data_be_o  	 	= 4'b1111;
-			data_addr_o  	= 1'b0;
-			data_wdata_o 	= 1'b0;
+			data_req_o 	 	= 1'bz;
+			data_we_o  	 	= 1'bz;
+			data_be_o  	 	= 4'bzzzz;
+			data_addr_o  	= 1'bz;
+			data_wdata_o 	= 1'bz;
 
-			//signals ftm memory
+			//signals ftm memory inputs
 			ftm_data_req 	= data_req_0;
 			ftm_data_we 	= data_we_0;
 			ftm_data_be 	= data_be_0;
 			ftm_data_addr 	= data_addr_0;
 			ftm_data_wdata 	= data_wdata_0;
 
-			//signals ftm memory
+			//signals ftm memory outputs
 			data_gnt_0    	= ftm_data_gnt;
 			data_rvalid_0 	= ftm_data_rvalid; 
 			data_rdata_0  	= ftm_data_rdata; 
@@ -246,14 +247,14 @@ module cevero_ft_core
 			data_addr_o  	= data_addr_0; 
 			data_wdata_o 	= data_wdata_0;
 
-			//signals ftm memory
-			ftm_data_req 	= 1'b0;
-			ftm_data_we 	= 1'b0;
-			ftm_data_be 	= 4'b1111;
-			ftm_data_addr 	= 1'b0;
-			ftm_data_wdata 	= 1'b0;
+			//signals ftm memory inputs
+			ftm_data_req 	= 1'bz;
+			ftm_data_we 	= 1'bz;
+			ftm_data_be 	= 4'bzzzz;
+			ftm_data_addr 	= 1'bz;
+			ftm_data_wdata 	= 1'bz;
 
-			//signals ftm memory
+			//signals ftm memory outputs
 			data_gnt_0    	= data_gnt_i;
 			data_rvalid_0 	= data_rvalid_i; 
 			data_rdata_0  	= data_rdata_i; 
@@ -267,8 +268,38 @@ module cevero_ft_core
     // *** FT MODULE ASSIGNS *** //
     ///////////////////////////////
 
-
 	assign recovery_done = recovery_done_0;//& recovery_done_1
+
+// ------------ ERROR INJECTION --------------
+	logic can_inject_error = 0;
+	int error_count = 0;
+    logic [31:0] data;
+	int r;
+
+	function logic [31:0] random_error_generator();
+		if (can_inject_error && error_count < 1) begin
+			r = $urandom_range(0,26);
+			// state = 0 means that the FTM is not in recovery state
+			// We still have to avoid inserting errors during error recovery
+			//if (r == 0 && ftm.control_module.state == 3'b000) begin
+			if (r == 0) begin
+				$display("[ERROR INSERTION] %t", $realtime);
+				return 32'b00000000011000110000001110110011; //32'h006303b3 add x7,x6,x6
+			end
+		end 
+		return instr_rdata_0;
+	endfunction
+
+    // Count detected errors
+	always_ff @( posedge ftm.error ) begin : countError
+		error_count = error_count + 1;
+		$display("[ERROR DETECTED] %t", $realtime);
+	end
+
+    always_comb data = random_error_generator(); 
+
+// ------------ END ERROR INJECTION --------------
+
 
     ////////////////////////////////////////////////////////////////////
     //  _           _              _   _       _   _                  //
@@ -307,6 +338,7 @@ module cevero_ft_core
 
 		//control signals
 		.done_i				(recovery_done), 	
+		.force_error_i		(force_error_i), 	
 		.recover_o			(do_recover),
 		.reset_o 			(reset_cores),
 		.recovering_o		(recovering)
@@ -314,7 +346,7 @@ module cevero_ft_core
 
 	ibex_core 
 	#(
-		.DmHaltAddr		     ( 32'h00000000        )
+		.DmHaltAddr		     ( 32'h100       ) // Address where the core jumps when goes to the debug(recovery) routine
 	)core_0(
         .regfile_we_o        ( regfile_we_0        ),
         .regfile_waddr_o     ( regfile_waddr_0     ),
@@ -333,7 +365,7 @@ module cevero_ft_core
 		.instr_gnt_i         ( instr_gnt_0         ),
 		.instr_rvalid_i      ( instr_rvalid_0      ),
 		.instr_addr_o        ( instr_addr_0        ),
-		.instr_rdata_i       ( instr_rdata_0       ),
+		.instr_rdata_i       ( data       ),
 		.instr_err_i    	 ( instr_err_0		   ),
 		
 		.data_req_o          ( data_req_0          ),
@@ -364,7 +396,7 @@ module cevero_ft_core
 	);
 	ibex_core 
 	#(
-		.DmHaltAddr		     ( 32'h00000000        )
+		.DmHaltAddr		     ( 32'h100       )
 	)core_1(
         .regfile_we_o        ( regfile_we_1        ),
         .regfile_waddr_o     ( regfile_waddr_1     ),
