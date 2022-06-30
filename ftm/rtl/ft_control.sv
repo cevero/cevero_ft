@@ -6,7 +6,8 @@ module ft_control(
 	input logic 	force_error_i,
 	output logic 	reset_cores_no,
 	output logic	recover_o,
-	output logic	recovering_o
+	output logic	recovering_o,
+	output logic 	load_pc_o
 );
     localparam WAIT      = 3'b000;
     localparam RESET     = 3'b001;
@@ -16,19 +17,24 @@ module ft_control(
     localparam DONE      = 3'b100;
 
     logic [2:0]        state = 3'b000;
-
+	int counter = 2;
     always_ff @(negedge clk_i) begin
         if (enable_i) begin
             case (state)
-				WAIT:
+				WAIT: begin
+					counter <= 3;
 					if((error_i | force_error_i) )
 						state <= RESET;	
+				end
 				RESET:
 					state <= RECOVERY1;	
 				RECOVERY1:
 					state <= RECOVERY;	
-				RECOVERY:
-					state <= WAIT_RECOVERY_FINISH;
+				RECOVERY: begin
+					if (counter <= 0)
+						state <= WAIT_RECOVERY_FINISH;
+					counter <= counter - 1;
+				end
 				WAIT_RECOVERY_FINISH:
 					if(recovery_done_i)
 						state <= DONE;
@@ -41,6 +47,7 @@ module ft_control(
 	assign reset_cores_no = (state == RESET);
 	assign recover_o = (state == RECOVERY) | (state == RECOVERY1);
 	assign recovering_o = (state == RECOVERY) | (state == RECOVERY1)| (state ==  WAIT_RECOVERY_FINISH);
+	assign load_pc_o = (state == WAIT) | (state == RESET);
 endmodule
 
 

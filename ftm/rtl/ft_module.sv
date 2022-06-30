@@ -42,6 +42,7 @@ logic [4:0] addr;
 logic error;
 logic we_ftmem;
 logic recovery_done;
+logic load_pc;
 
 assign we_ftmem = we_a_i & we_b_i & ~error;
 
@@ -57,6 +58,7 @@ ft_memory ftmem
     .data_rf_i	(data),
 
     .pc_i		(pc_i),
+    .load_pc_i  (load_pc),
 
 	.req_i		(data_req_i),
 	.gnt_o		(data_gnt_o),
@@ -90,7 +92,8 @@ ft_control ftctrl(
 	.force_error_i (force_error_i),
 	.reset_cores_no	(reset_o),
 	.recover_o		(recover_o),
-	.recovering_o	(recovering_o)
+	.recovering_o	(recovering_o),
+    .load_pc_o      (load_pc)
 );
 
 endmodule

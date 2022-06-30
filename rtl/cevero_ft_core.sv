@@ -278,7 +278,7 @@ module cevero_ft_core
 
 	function logic [31:0] random_error_generator();
 		if (can_inject_error && error_count < 1) begin
-			r = $urandom_range(0,26);
+			r = $urandom_range(0,10);
 			// state = 0 means that the FTM is not in recovery state
 			// We still have to avoid inserting errors during error recovery
 			//if (r == 0 && ftm.control_module.state == 3'b000) begin
@@ -355,7 +355,7 @@ module cevero_ft_core
 		.recovery_done_o	 ( recovery_done_0     ),
 
 		.clk_i               ( clk_i               ),
-		.rst_ni              ( reset_cores | rst_ni ),
+		.rst_ni              ( ~reset_cores & rst_ni ),
 		.test_en_i           ( test_en_0           ),
 		
 		.hart_id_i           ( hart_id_0           ),
@@ -405,7 +405,7 @@ module cevero_ft_core
 		.recovery_done_o	 ( recovery_done_1),
 
 		.clk_i               ( clk_i               ),
-		.rst_ni              ( reset_cores | rst_ni ),
+		.rst_ni              ( ~reset_cores & rst_ni  ),
 		.test_en_i           ( test_en_1           ),
 
 		.hart_id_i           ( hart_id_1           ),

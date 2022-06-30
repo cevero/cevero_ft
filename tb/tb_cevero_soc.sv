@@ -132,8 +132,8 @@ cevero_ft_core core(
     assign mem_result = data_mem.mem[1]; // word addr
 int expected_result;
     initial begin
-        $readmemb("./tb/program2.bin", inst_mem.mem );
-		expected_result = 3628800;
+        $readmemb("./tb/accum.bin", inst_mem.mem );
+		expected_result = 120;
     end
 
     initial clk = 0;
@@ -165,7 +165,7 @@ int delay;
 #15
 		force_error = 0;
        
-        #1600 $finish; 
+        //#16000 $finish; 
     end
 	
 	always @* begin : finish_condition

@@ -7,6 +7,7 @@ module ft_memory
     input  logic [4:0] 			  addr_rf_i,
     input  logic [31:0] 		  data_rf_i,
 
+	input  logic 				  load_pc_i,
     input  logic [31:0] 		  pc_i,
 
 	// Data memory interface
@@ -39,7 +40,9 @@ always @(posedge clk_i) begin
 		mem[addr_rf_i] <= data_rf_i;
 	end
 
-	mem[PC_ADDR] = pc_i;
+	if (load_pc_i) begin
+		mem[PC_ADDR] = pc_i;
+	end
 
 	rdata_o  <= mem[addr_i >> 2] ;
 end
