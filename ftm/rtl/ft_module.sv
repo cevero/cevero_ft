@@ -16,6 +16,7 @@ module ft_module
 
     // spc inputs and outputs
     input  logic [DATA_WIDTH-1:0] pc_i,
+    input  logic    valid_instr_exec_i,
 
     // Data memory interface
     input logic        		data_req_i,
@@ -76,6 +77,8 @@ ft_comparator ftcomp(
     .addr_b_i	(addr_b_i),
     .data_a_i	(data_a_i),
     .data_b_i	(data_b_i),
+
+    .valid_instr_i (valid_instr_exec_i),
 
     .addr_o		(addr),
     .data_o		(data),

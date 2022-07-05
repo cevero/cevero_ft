@@ -13,15 +13,17 @@ module ft_comparator
     output logic [ADDR_WIDTH-1:0] addr_o,
     output logic [DATA_WIDTH-1:0] data_o,
     output logic                  error_o,
+    input  logic                  valid_instr_i,
     input  logic force_i//Just for debug
 );
 
 always_comb
-    if (force_i | {we_a_i,addr_a_i,data_a_i} ^ {we_b_i,addr_b_i,data_b_i})
-        error_o <= 1'b1;
+    if(valid_instr_i)
+        if ({we_a_i,addr_a_i,data_a_i} ^ {we_b_i,addr_b_i,data_b_i})
+            error_o = 1'b1;
     else begin
-        addr_o <= addr_a_i;
-        data_o <= data_a_i;
-        error_o <= 1'b0;
+        addr_o = addr_a_i;
+        data_o = data_a_i;
+        error_o = 1'b0;
     end
 endmodule

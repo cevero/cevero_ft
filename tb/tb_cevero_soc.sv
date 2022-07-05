@@ -133,7 +133,7 @@ cevero_ft_core core(
 int expected_result;
     initial begin
         $readmemb("./tb/accum.bin", inst_mem.mem );
-		expected_result = 120;
+		expected_result = 5050;
     end
 
     initial clk = 0;
@@ -150,8 +150,8 @@ int delay;
 
 	    //$display(" time  | clk | mem_flag | mem_result | instr_addr | instr_req |\n");
 
-		$monitor(" %5t | %d | %d | %d | %h | %h |",  $time, clk,mem_flag,mem_result,instr_addr,instr_req);
-
+		//$monitor(" %5t | %d | %d | %d | %h | %h |",  $time, clk,mem_flag,mem_result,instr_addr,instr_req);
+		//$monitor(" %5t | %h | %h ",  $time,instr_addr,core.core_0.pc_id);
         rst_n = 0;
         fetch_enable = 0;
 #40

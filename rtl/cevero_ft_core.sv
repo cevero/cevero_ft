@@ -62,6 +62,7 @@ module cevero_ft_core
     logic [31:0]    regfile_wdata_0;
 	logic [31:0]    pc_o_0;
 	logic 		    recovery_done_0 ;
+	logic 			valid_instr_exec_0;
 	
 	logic           clock_en_0; //  = 1;    // enable clock, otherwise it is gated
 	logic           test_en_0; // = 0;     // enable all clock gates for testing
@@ -107,6 +108,7 @@ module cevero_ft_core
     logic [31:0]    regfile_wdata_1;
 	logic [31:0]    pc_o_1;
 	logic 		    recovery_done_1;
+	logic 			valid_instr_exec_1;
 
 	logic           test_en_1; // = 0;     // enable all clock gates for testing
 	
@@ -275,16 +277,17 @@ module cevero_ft_core
 	int error_count = 0;
     logic [31:0] data;
 	int r;
-
+//IDEIA: sortear a op de erro dentre varias, e testar para 2 ou 3 programas
+//		Voltar do recovery pra reset se houver erro na recuperacao
 	function logic [31:0] random_error_generator();
-		if (can_inject_error && error_count < 1) begin
-			r = $urandom_range(0,10);
+		if (can_inject_error && error_count < 10) begin
+			r = $urandom_range(0,20);
 			// state = 0 means that the FTM is not in recovery state
 			// We still have to avoid inserting errors during error recovery
 			//if (r == 0 && ftm.control_module.state == 3'b000) begin
-			if (r == 0) begin
+			if (r == 0 && instr_addr_0 < 32'h100) begin
 				$display("[ERROR INSERTION] %t", $realtime);
-				return 32'b00000000011000110000001110110011; //32'h006303b3 add x7,x6,x6
+				return 32'b01000000000101010101010100010011; //32'h006303b3 add x7,x6,x6
 			end
 		end 
 		return instr_rdata_0;
@@ -293,7 +296,8 @@ module cevero_ft_core
     // Count detected errors
 	always_ff @( posedge ftm.error ) begin : countError
 		error_count = error_count + 1;
-		$display("[ERROR DETECTED] %t", $realtime);
+		$display("[ERROR DETECTED] %d", error_count);
+		$display("Executing inst with pc = %h", core_0.pc_id);
 	end
 
     always_comb data = random_error_generator(); 
@@ -322,9 +326,9 @@ module cevero_ft_core
         .data_b_i            ( regfile_wdata_1     ),
 
         .pc_i                ( pc_o_0        	   ),
-		.enable_i            ( 1'b1          ),
+		.enable_i            ( 1'b1           	   ),
+		.valid_instr_exec_i  ( valid_instr_exec_0  ),
 		
-
 		// Data memory interface
 		.data_req_i			(ftm_data_req),
 		.data_gnt_o			(ftm_data_gnt),
@@ -353,6 +357,7 @@ module cevero_ft_core
         .regfile_wdata_o     ( regfile_wdata_0     ),
 		.pc_o				 ( pc_o_0			   ),
 		.recovery_done_o	 ( recovery_done_0     ),
+		.sniff_instr_valid_id_o	 ( valid_instr_exec_0  ),
 
 		.clk_i               ( clk_i               ),
 		.rst_ni              ( ~reset_cores & rst_ni ),
@@ -403,6 +408,7 @@ module cevero_ft_core
         .regfile_wdata_o     ( regfile_wdata_1     ),
 		.pc_o				 ( pc_o_1),
 		.recovery_done_o	 ( recovery_done_1),
+		.sniff_instr_valid_id_o	 ( valid_instr_exec_1  ),
 
 		.clk_i               ( clk_i               ),
 		.rst_ni              ( ~reset_cores & rst_ni  ),

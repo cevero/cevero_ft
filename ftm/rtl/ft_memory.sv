@@ -21,7 +21,7 @@ module ft_memory
 
 localparam int PC_ADDR = 32;
 
-logic [3:0][7:0] mem[256];
+logic [3:0][7:0] mem[64];
 logic [3:0][7:0] rdaddr_reg;
 
 initial begin
