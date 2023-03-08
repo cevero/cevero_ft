@@ -44,8 +44,6 @@ logic			core_sleep;
 logic [31:0] mem_flag;
 logic [31:0] mem_result;
 
-logic			force_error;
-
 // ======  MODULES INSTANCES  ===========
 cevero_ft_core core(
 	.clk_i					(clk),
@@ -128,54 +126,44 @@ cevero_ft_core core(
 		.wdata_i  (data_wdata )
 	);
 
-	assign mem_flag = data_mem.mem[0];
-    assign mem_result = data_mem.mem[1]; // word addr
-int expected_result;
-    initial begin
+	initial begin
+		//accum.bin
+		//fact.bin
+		//fibo.bin
         $readmemb("./tb/accum.bin", inst_mem.mem );
-		expected_result = 5050;
     end
 
+	// clock generation
     initial clk = 0;
     always #5 clk = ~clk;
-int delay;
+
+	int delay;
 
     initial begin
 		core.core_0.instr_fetch_err = 0;
 		core.core_1.instr_fetch_err = 0;
-		force_error = 0;
-		delay = 220;
-		$display("delay: %d",delay);
 
-
-	    //$display(" time  | clk | mem_flag | mem_result | instr_addr | instr_req |\n");
-
-		//$monitor(" %5t | %d | %d | %d | %h | %h |",  $time, clk,mem_flag,mem_result,instr_addr,instr_req);
 		//$monitor(" %5t | %h | %h ",  $time,instr_addr,core.core_0.pc_id);
+
         rst_n = 0;
         fetch_enable = 0;
 #40
         rst_n = 1;
         fetch_enable = 1;
-		// = $urandom_range(200,800);
-		
-#delay
-		force_error = 0;
+#20
 		core.can_inject_error = 1;
-#15
-		force_error = 0;
-       
-        //#16000 $finish; 
+
+        //#100000 $finish; 
     end
 	
+	assign mem_flag = data_mem.mem[0];
+    assign mem_result = data_mem.mem[1];
+
 	always @* begin : finish_condition
 		if (mem_flag == 1'b1) begin
 			$display("result: %d",mem_result);
-			$display("expected: %d\n",expected_result);
 			#5 $finish;
 		end
 	end
-	
-
 
 endmodule

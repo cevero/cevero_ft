@@ -17,7 +17,7 @@ module ft_control(
     localparam DONE      = 3'b100;
 
     logic [2:0]        state = 3'b000;
-	int counter = 2;
+	int counter = 3;
     always_ff @(negedge clk_i) begin
         if (enable_i) begin
             case (state)
@@ -27,7 +27,7 @@ module ft_control(
 						state <= RESET;	
 				end
 				RESET:
-					state <= RECOVERY1;	
+					state <= RECOVERY;	
 				RECOVERY1:
 					state <= RECOVERY;	
 				RECOVERY: begin
@@ -37,9 +37,7 @@ module ft_control(
 				end
 				WAIT_RECOVERY_FINISH:
 					if(recovery_done_i)
-						state <= DONE;
-				DONE:
-					state <= WAIT;	
+						state <= WAIT;	
             endcase
         end
     end

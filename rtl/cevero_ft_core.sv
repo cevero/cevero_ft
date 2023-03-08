@@ -277,17 +277,20 @@ module cevero_ft_core
 	int error_count = 0;
     logic [31:0] data;
 	int r;
-//IDEIA: sortear a op de erro dentre varias, e testar para 2 ou 3 programas
-//		Voltar do recovery pra reset se houver erro na recuperacao
+
+	logic [31:0] error_to_inject[3] = {32'b00000010101001010000010100110011,//mul a0,a0,a0 
+										32'b01000000000101010101010100010011,//srai a0,a0,1 
+										32'b11111110101000000100100011100011};//blt x0 x10 -16
+
 	function logic [31:0] random_error_generator();
 		if (can_inject_error && error_count < 10) begin
 			r = $urandom_range(0,20);
-			// state = 0 means that the FTM is not in recovery state
-			// We still have to avoid inserting errors during error recovery
-			//if (r == 0 && ftm.control_module.state == 3'b000) begin
-			if (r == 0 && instr_addr_0 < 32'h100) begin
+
+			if (r <3 && instr_addr_0 < 32'h100) begin
+				r = $urandom_range(0,2);
 				$display("[ERROR INSERTION] %t", $realtime);
-				return 32'b01000000000101010101010100010011; //32'h006303b3 add x7,x6,x6
+				$display("Injecting inst #%h", r);
+				return error_to_inject[r];
 			end
 		end 
 		return instr_rdata_0;
