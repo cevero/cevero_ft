@@ -26,8 +26,8 @@ compile:
 # Compiles all verilog files in the "default" folders
 	$(CC) -sv -mfcu $(IBEXDIR)/ibex_pkg.sv $(SVFILES)\
 		ip/soc_components/soc_utils/*.sv \
-		ftm/rtl/*.sv \
-		ftm/tb/*.sv \
+		ip/ftm/rtl/*.sv \
+		ip/ftm/tb/*.sv \
 		rtl/*.sv \
 		tb/*.sv \
 		+incdir+ip/ibex/vendor/lowrisc_ip/ip/prim/rtl \
