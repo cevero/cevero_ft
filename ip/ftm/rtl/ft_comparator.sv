@@ -13,8 +13,7 @@ module ft_comparator
     output logic [ADDR_WIDTH-1:0] addr_o,
     output logic [DATA_WIDTH-1:0] data_o,
     output logic                  error_o,
-    input  logic                  valid_instr_i,
-    input  logic force_i//Just for debug
+    input  logic                  valid_instr_i
 );
 
 always_comb

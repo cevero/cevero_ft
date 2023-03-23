@@ -3,7 +3,6 @@ module ft_control(
 	input logic 	error_i,
 	input logic 	enable_i,
 	input logic 	recovery_done_i,
-	input logic 	force_error_i,
 	output logic 	reset_cores_no,
 	output logic	recover_o,
 	output logic	recovering_o,
@@ -23,7 +22,7 @@ module ft_control(
             case (state)
 				WAIT: begin
 					counter <= 3;
-					if((error_i | force_error_i) )
+					if(error_i)
 						state <= RESET;	
 				end
 				RESET:

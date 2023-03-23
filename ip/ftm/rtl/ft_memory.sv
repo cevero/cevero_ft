@@ -28,7 +28,6 @@ initial begin
 	//int i;
 	for(int i=0;i<32;i=i+1) begin
 		mem[i] = 32'h0;
-		$display("mem[%d] = %h",i,ftmem.mem[i]);
 	end
 end
 
