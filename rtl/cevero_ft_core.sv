@@ -1,11 +1,8 @@
 module cevero_ft_core
 (
 	// Clock and Reset
-	input  logic        clk_i,
+    input  logic        clk_i,
 	input  logic        rst_ni,
-
-	output logic [31:0] instr_addr_o_0,
-	input  logic        force_error_i,     // enable all clock gates for testing
 
 	input  logic        test_en_i,     // enable all clock gates for testing
 
@@ -57,6 +54,7 @@ module cevero_ft_core
     //                                     |___/                    //
     //////////////////////////////////////////////////////////////////
 
+    // Cevero signals
     logic           regfile_we_0;
     logic [4:0]     regfile_waddr_0;
     logic [31:0]    regfile_wdata_0;
@@ -103,6 +101,7 @@ module cevero_ft_core
     //                                 |___/                    //
     //////////////////////////////////////////////////////////////
 
+    // Cevero signals
     logic           regfile_we_1;
     logic [4:0]     regfile_waddr_1;
     logic [31:0]    regfile_wdata_1;
@@ -138,13 +137,20 @@ module cevero_ft_core
 	// Debug Interface
 	logic           debug_req_1;
 
-	//================================
-	//			 FTM SIGNALS
-	//================================
-	logic recovery_done;
-	logic do_recover;
-	logic reset_cores;
-	logic recovering;
+    /////////////////////////////////////////////////////////
+    //   __ _                   _                   _      //
+    //  / _| |_ _ __ ___    ___(_) __ _ _ __   __ _| |___  //
+    // | |_| __| '_ ` _ \  / __| |/ _` | '_ \ / _` | / __| //
+    // |  _| |_| | | | | | \__ \ | (_| | | | | (_| | \__ \ //
+    // |_|  \__|_| |_| |_| |___/_|\__, |_| |_|\__,_|_|___/ //
+    //                            |___/                    //
+    //                                                     //
+    /////////////////////////////////////////////////////////
+
+	logic        recovery_done;
+	logic        do_recover;
+	logic        reset_cores;
+	logic        recovering;
 
 	logic        ftm_data_req;
 	logic        ftm_data_gnt;
@@ -272,42 +278,6 @@ module cevero_ft_core
 
 	assign recovery_done = recovery_done_0;//& recovery_done_1
 
-// ------------ ERROR INJECTION --------------
-	logic can_inject_error = 0;
-	int error_count = 0;
-    logic [31:0] data;
-	int r;
-
-	logic [31:0] error_to_inject[3] = {32'b00000010101001010000010100110011,//mul a0,a0,a0 
-										32'b01000000000101010101010100010011,//srai a0,a0,1 
-										32'b11111110101000000100100011100011};//blt x0 x10 -16
-
-	function logic [31:0] random_error_generator();
-		if (can_inject_error && error_count < 10) begin
-			r = $urandom_range(0,20);
-
-			if (r <3 && instr_addr_0 < 32'h100) begin
-				r = $urandom_range(0,2);
-				$display("[ERROR INSERTION] %t", $realtime);
-				$display("Injecting inst #%h", r);
-				return error_to_inject[r];
-			end
-		end 
-		return instr_rdata_0;
-	endfunction
-
-    // Count detected errors
-	always_ff @( posedge ftm.error ) begin : countError
-		error_count = error_count + 1;
-		$display("[ERROR DETECTED] %d", error_count);
-		$display("Executing inst with pc = %h", core_0.pc_id);
-	end
-
-    always_comb data = random_error_generator(); 
-
-// ------------ END ERROR INJECTION --------------
-
-
     ////////////////////////////////////////////////////////////////////
     //  _           _              _   _       _   _                  //
     // (_)_ __  ___| |_ __ _ _ __ | |_(_) __ _| |_(_) ___  _ __  ___  //     
@@ -345,7 +315,6 @@ module cevero_ft_core
 
 		//control signals
 		.done_i				(recovery_done), 	
-		.force_error_i		(force_error_i), 	
 		.recover_o			(do_recover),
 		.reset_o 			(reset_cores),
 		.recovering_o		(recovering)
@@ -373,7 +342,7 @@ module cevero_ft_core
 		.instr_gnt_i         ( instr_gnt_0         ),
 		.instr_rvalid_i      ( instr_rvalid_0      ),
 		.instr_addr_o        ( instr_addr_0        ),
-		.instr_rdata_i       ( data       ),
+		.instr_rdata_i       ( instr_rdata_0       ),
 		.instr_err_i    	 ( instr_err_0		   ),
 		
 		.data_req_o          ( data_req_0          ),
