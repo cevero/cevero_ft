@@ -15,9 +15,9 @@ SVFILES=`ls $(IBEXDIR)/*.sv | awk '!/ibex_pkg.sv/ {print $0}'`
 
 default: all
 
-all: compile run
+all: build run
 
-compile: 
+build: 
 # Checks if work library exists and creates one otherwise
 	if [ ! -e $(WORK) ]; then \
         vlib $(WORK); \
@@ -26,6 +26,7 @@ compile:
 # Compiles all verilog files in the "default" folders
 	$(CC) -sv -mfcu $(IBEXDIR)/ibex_pkg.sv $(SVFILES)\
 		ip/soc_components/soc_utils/*.sv \
+		ip/soc_components/sp_ram/rtl/*.sv \
 		ip/ftm/rtl/*.sv \
 		ip/ftm/tb/*.sv \
 		rtl/*.sv \
