@@ -53,17 +53,25 @@ module tb_cevero_ft;
     end
 
 // ------------ ERROR INJECTION --------------
-	int error_count = 0;
-    logic [31:0] data;
-	int r;
 
-	logic [31:0] error_to_inject[3] = {
-        32'b00000010101001010000010100110011,//mul a0,a0,a0 
-	    32'b01000000000101010101010100010011,//srai a0,a0,1 
-		32'b11111110101000000100100011100011 //blt x0 x10 -16
+
+    logic [31:0] reg_list[8] = {
+        dut.core.instr_rdata_0, 
+        dut.core.instr_rdata_1,
+        dut.core.instr_addr_0,
+        dut.core.instr_addr_1,
+        dut.core.data_rdata_0,
+        dut.core.data_rdata_1,
+        dut.core.data_addr_0,
+        dut.core.data_addr_1
     };
 
-	function logic [31:0] random_error_generator();
+    int index;
+	int error_count = 0;
+    logic [31:0] data;
+
+
+	function logic [31:0] random_error_generator(input logic [31:0] my_reg);
 		if (can_inject_error && error_count < 10) begin
 			r = $urandom_range(0,20);
 
@@ -71,10 +79,10 @@ module tb_cevero_ft;
 				r = $urandom_range(0,2);
 				$display("[ERROR INSERTION] %t", $realtime);
 				$display("Injecting inst #%h", r);
-				return error_to_inject[r];
+				return $urandom(my_reg);
 			end
 		end 
-		return dut.core.instr_rdata_0;
+		return my_reg;
 	endfunction
 
     // Count detected errors
@@ -84,6 +92,8 @@ module tb_cevero_ft;
 		$display("Executing inst with pc = %h", dut.core.core_0.pc_id);
 	end
 
-    always_comb data = random_error_generator(); 
+    index = $urandom_range(0, 7);
+
+    always_comb data = random_error_generator(reg_list[index]); 
 
 endmodule
