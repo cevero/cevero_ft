@@ -94,6 +94,6 @@ module tb_cevero_ft;
 
     index = $urandom_range(0, 7);
 
-    always_comb data = random_error_generator(reg_list[index]); 
+    always_comb reg_list[index] = random_error_generator(reg_list[index]); 
 
 endmodule
