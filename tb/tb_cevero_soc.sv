@@ -72,6 +72,7 @@ module tb_cevero_ft;
 
 
 	function logic [31:0] random_error_generator(input logic [31:0] my_reg);
+        int r;
 		if (can_inject_error && error_count < 10) begin
 			r = $urandom_range(0,20);
 
@@ -92,7 +93,9 @@ module tb_cevero_ft;
 		$display("Executing inst with pc = %h", dut.core.core_0.pc_id);
 	end
 
-    index = $urandom_range(0, 7);
+    always_ff @(posedge clk) begin        
+        index = $urandom_range(0, 7);
+    end
 
     always_comb reg_list[index] = random_error_generator(reg_list[index]); 
 
