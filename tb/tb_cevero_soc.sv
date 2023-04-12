@@ -21,15 +21,15 @@ module tb_cevero_ft;
     initial begin
 
         $readmemb("./tb/accum.bin", dut.inst_mem.mem );
-
-        $display("time  | instr_addr  |  instr_rdata  |  instr_req  | instr_gnt ");
-		$monitor(" %5t | %h | %h | %h | %h ",
+/**
+        $display("time  | instr_addr  |  instr_rdata  |  error_count ");
+		$monitor(" %5t | %h | %h | %d ",
                     $time,
                     dut.instr_addr,
                     dut.instr_rdata,
-                    dut.instr_req,
-                    dut.instr_gnt
+                    error_count
                 );
+**/
 
         rst_n = 0;
         fetch_enable = 0;
@@ -37,9 +37,10 @@ module tb_cevero_ft;
         rst_n = 1;
         fetch_enable = 1;
 
-#80
+#50000
         can_inject_error=1;
-
+#10
+        can_inject_error=0;
     end
 
     assign mem_flag = dut.data_mem.mem[0];
@@ -54,19 +55,17 @@ module tb_cevero_ft;
 
 // ------------ ERROR INJECTION --------------
 	int error_count = 0;
-    logic [31:0] data;
-	int r;
-
-	logic [31:0] error_to_inject[3] = {
-        32'b00000010101001010000010100110011,//mul a0,a0,a0 
-	    32'b01000000000101010101010100010011,//srai a0,a0,1 
-		32'b11111110101000000100100011100011 //blt x0 x10 -16
-    };
 
 	function logic [31:0] random_error_generator();
+        int r;
+        localparam logic [31:0] error_to_inject[3] = {
+            32'b00000010101001010000010100110011,//mul a0,a0,a0 
+            32'b01000000000101010101010100010011,//srai a0,a0,1 
+            32'b11111110101000000100100011100011 //blt x0 x10 -16
+        };
+
 		if (can_inject_error && error_count < 10) begin
 			r = $urandom_range(0,20);
-
 			if (r < 3 && dut.core.instr_addr_0 < 32'h100) begin
 				r = $urandom_range(0,2);
 				$display("[ERROR INSERTION] %t", $realtime);
@@ -74,8 +73,15 @@ module tb_cevero_ft;
 				return error_to_inject[r];
 			end
 		end 
-		return dut.core.instr_rdata_0;
 	endfunction
+
+    always_ff @(posedge clk) begin
+        if (can_inject_error)
+            force dut.core.instr_rdata_1 = random_error_generator(); 
+        else
+            release dut.core.instr_rdata_1;
+    end
+
 
     // Count detected errors
 	always_ff @( posedge dut.core.ftm.error ) begin : countError
@@ -83,7 +89,5 @@ module tb_cevero_ft;
 		$display("[ERROR DETECTED] %d", error_count);
 		$display("Executing inst with pc = %h", dut.core.core_0.pc_id);
 	end
-
-    always_comb data = random_error_generator(); 
 
 endmodule
