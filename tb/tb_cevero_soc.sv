@@ -16,6 +16,8 @@ module tb_cevero_ft;
 
 	// clock generation
     initial clk = 0;
+    int error_count;
+    initial error_count = 0;
     always #5 clk = ~clk;
 
     initial begin
@@ -57,40 +59,80 @@ module tb_cevero_ft;
 
 
     logic [31:0] reg_list[8] = {
-        dut.core.instr_rdata_0, 
-        dut.core.instr_rdata_1,
-        dut.core.instr_addr_0,
-        dut.core.instr_addr_1,
-        dut.core.data_rdata_0,
-        dut.core.data_rdata_1,
-        dut.core.data_addr_0,
-        dut.core.data_addr_1
+        dut.core.core_0.instr_rdata_i, 
+        dut.core.core_0.instr_addr_o,
+        dut.core.core_0.data_rdata_i,
+        dut.core.core_0.data_addr_o,
+        dut.core.core_1.instr_rdata_i,
+        dut.core.core_1.instr_addr_o,
+        dut.core.core_1.data_rdata_i,
+        dut.core.core_1.data_addr_o
     };
 
     int index;
-	int error_count = 0;
+	
     logic [31:0] data;
 
 
 	function logic [31:0] random_error_generator(input logic [31:0] my_reg);
         int r;
+        logic [31:0] fault_reg;
 		if (can_inject_error && error_count < 10) begin
 			r = $urandom_range(0,20);
 			if (r < 3 && dut.core.instr_addr_0 < 32'h100) begin
 				r = $urandom_range(0,2);
 				$display("[ERROR INSERTION] %t", $realtime);
 				$display("Injecting inst #%h", r);
-				return $urandom(my_reg);
+                fault_reg = $urandom(my_reg);
+                // fault_reg = my_reg ^ fault_reg;
+				return fault_reg;
 			end
 		end 
 		return my_reg;
 	endfunction
 
     always_ff @(posedge clk) begin
-        if (can_inject_error)
-            force dut.core.instr_rdata_1 = random_error_generator(); 
-        else
-            release dut.core.instr_rdata_1;
+        // index = $urandom_range(0, 7);
+        index = 0;
+        if (can_inject_error) begin
+            if (index == 0) begin
+                $display("Sinal original %b", dut.core.core_0.instr_rdata_i);
+                force dut.core.core_0.instr_rdata_i = random_error_generator(reg_list[index]); 
+                $display("Sinal injetado %b", dut.core.core_0.instr_rdata_i);
+            end
+            // else if (index == 1) 
+            //     force dut.core.core_0.instr_addr_o = random_error_generator(reg_list[index]); 
+            // else if (index == 2) 
+            //     force dut.core.core_0.data_rdata_i = random_error_generator(reg_list[index]); 
+            // else if (index == 3) 
+            //     force dut.core.core_0.data_addr_o = random_error_generator(reg_list[index]); 
+            // else if (index == 4) 
+            //     force dut.core.core_1.instr_rdata_i = random_error_generator(reg_list[index]); 
+            // else if (index == 5) 
+            //     force dut.core.core_1.instr_addr_o = random_error_generator(reg_list[index]); 
+            // else if (index == 6) 
+            //     force dut.core.core_1.data_rdata_i = random_error_generator(reg_list[index]); 
+            // else if (index == 7) 
+            //     force dut.core.core_1.data_addr_o = random_error_generator(reg_list[index]); 
+        end
+        else begin
+            if (index == 0)
+                release dut.core.core_0.instr_rdata_i;
+            // else if (index == 1)
+            //     release dut.core.core_0.instr_addr_o;
+            // else if (index == 2)
+            //     release dut.core.core_0.data_rdata_i;
+            // else if (index == 3)
+            //     release dut.core.core_0.data_addr_o;
+            // else if (index == 4)
+            //     release dut.core.core_1.instr_rdata_i;
+            // else if (index == 5)
+            //     release dut.core.core_1.instr_addr_o;
+            // else if (index == 6)
+            //     release dut.core.core_1.data_rdata_i;
+            // else if (index == 7)
+            //     release dut.core.core_1.data_addr_o;
+        end
     end
 
 
@@ -100,10 +142,6 @@ module tb_cevero_ft;
 		$display("[ERROR DETECTED] %d", error_count);
 		$display("Executing inst with pc = %h", dut.core.core_0.pc_id);
 	end
-
-    always_ff @(posedge clk) begin        
-        index = $urandom_range(0, 7);
-    end
 
     always_comb reg_list[index] = random_error_generator(reg_list[index]); 
 
