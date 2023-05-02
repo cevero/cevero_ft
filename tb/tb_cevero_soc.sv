@@ -7,6 +7,7 @@ module tb_cevero_ft;
     logic [31:0]    mem_result;
 
     logic can_inject_error = 0;
+    logic err = 0;
 
     cevero_soc dut(
         .clk_i              (clk),
@@ -21,8 +22,7 @@ module tb_cevero_ft;
     always #5 clk = ~clk;
 
     initial begin
-
-        $readmemb("./tb/accum.bin", dut.inst_mem.mem );
+        $readmemb("./tb/fibo.bin", dut.inst_mem.mem );
 /**
         $display("time  | instr_addr  |  instr_rdata  |  error_count ");
 		$monitor(" %5t | %h | %h | %d ",
@@ -82,9 +82,9 @@ module tb_cevero_ft;
 			if (r < 3 && dut.core.instr_addr_0 < 32'h100) begin
 				r = $urandom_range(0,2);
 				$display("[ERROR INSERTION] %t", $realtime);
-				$display("Injecting inst #%h", r);
+				$display("Sinal original %b", my_reg);
                 fault_reg = $urandom(my_reg);
-                // fault_reg = my_reg ^ fault_reg;
+                $display("Sinal injetado %b", fault_reg);
 				return fault_reg;
 			end
 		end 
@@ -92,46 +92,36 @@ module tb_cevero_ft;
 	endfunction
 
     always_ff @(posedge clk) begin
-        // index = $urandom_range(0, 7);
-        index = 0;
+        if (err == 0)
+            index = $urandom_range(0, 7);
+            
         if (can_inject_error) begin
-            if (index == 0) begin
-                $display("Sinal original %b", dut.core.core_0.instr_rdata_i);
-                force dut.core.core_0.instr_rdata_i = random_error_generator(reg_list[index]); 
-                $display("Sinal injetado %b", dut.core.core_0.instr_rdata_i);
-            end
-            // else if (index == 1) 
-            //     force dut.core.core_0.instr_addr_o = random_error_generator(reg_list[index]); 
-            // else if (index == 2) 
-            //     force dut.core.core_0.data_rdata_i = random_error_generator(reg_list[index]); 
-            // else if (index == 3) 
-            //     force dut.core.core_0.data_addr_o = random_error_generator(reg_list[index]); 
-            // else if (index == 4) 
-            //     force dut.core.core_1.instr_rdata_i = random_error_generator(reg_list[index]); 
-            // else if (index == 5) 
-            //     force dut.core.core_1.instr_addr_o = random_error_generator(reg_list[index]); 
-            // else if (index == 6) 
-            //     force dut.core.core_1.data_rdata_i = random_error_generator(reg_list[index]); 
-            // else if (index == 7) 
-            //     force dut.core.core_1.data_addr_o = random_error_generator(reg_list[index]); 
+            err = 1;
+            
+            unique case (index)
+                0 : force dut.core.core_0.instr_rdata_i = random_error_generator(reg_list[index]); 
+                1 : force dut.core.core_0.instr_addr_o  = random_error_generator(reg_list[index]); 
+                2 : force dut.core.core_0.data_rdata_i  = random_error_generator(reg_list[index]); 
+                3 : force dut.core.core_0.data_addr_o   = random_error_generator(reg_list[index]); 
+                4 : force dut.core.core_1.instr_rdata_i = random_error_generator(reg_list[index]); 
+                5 : force dut.core.core_1.instr_addr_o  = random_error_generator(reg_list[index]); 
+                6 : force dut.core.core_1.data_rdata_i  = random_error_generator(reg_list[index]); 
+                7 : force dut.core.core_1.data_addr_o   = random_error_generator(reg_list[index]);
+            endcase
         end
         else begin
-            if (index == 0)
-                release dut.core.core_0.instr_rdata_i;
-            // else if (index == 1)
-            //     release dut.core.core_0.instr_addr_o;
-            // else if (index == 2)
-            //     release dut.core.core_0.data_rdata_i;
-            // else if (index == 3)
-            //     release dut.core.core_0.data_addr_o;
-            // else if (index == 4)
-            //     release dut.core.core_1.instr_rdata_i;
-            // else if (index == 5)
-            //     release dut.core.core_1.instr_addr_o;
-            // else if (index == 6)
-            //     release dut.core.core_1.data_rdata_i;
-            // else if (index == 7)
-            //     release dut.core.core_1.data_addr_o;
+            unique case (index)
+                0 : release dut.core.core_0.instr_rdata_i = random_error_generator(reg_list[index]); 
+                1 : release dut.core.core_0.instr_addr_o  = random_error_generator(reg_list[index]); 
+                2 : release dut.core.core_0.data_rdata_i  = random_error_generator(reg_list[index]); 
+                3 : release dut.core.core_0.data_addr_o   = random_error_generator(reg_list[index]); 
+                4 : release dut.core.core_1.instr_rdata_i = random_error_generator(reg_list[index]); 
+                5 : release dut.core.core_1.instr_addr_o  = random_error_generator(reg_list[index]); 
+                6 : release dut.core.core_1.data_rdata_i  = random_error_generator(reg_list[index]); 
+                7 : release dut.core.core_1.data_addr_o   = random_error_generator(reg_list[index]);
+            endcase
+
+            err = 0;
         end
     end
 
