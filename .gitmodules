@@ -7,3 +7,6 @@
 [submodule "ip/ftm"]
 	path = ip/ftm
 	url = https://github.com/cevero/ftm.git
+[submodule "ip/cevero_dvfs"]
+	path = ip/cevero_dvfs
+	url = https://github.com/cevero/cevero_dvfs.git
