@@ -120,5 +120,19 @@ cevero_ft_core core(
 		.rdata_o  (data_rdata ),
 		.wdata_i  (data_wdata )
 	);
+
+  // DVFS Module
+  cevero_dvfs
+  #(
+    .MaxErrorRate (3),
+    .TimeFrame    (10),
+    .OkThreshold  (10)
+  ) dvfs (
+    .clk_i           (clk_i ),
+    .rst_ni          (rst_ni),
+    .error_i         (error ),
+    .def_voltage_i   (),
+    .set_voltage_o   ()
+  );
 	
 endmodule

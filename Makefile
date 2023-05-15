@@ -29,6 +29,7 @@ build:
 		ip/soc_components/sp_ram/rtl/*.sv \
 		ip/ftm/rtl/*.sv \
 		ip/ftm/tb/*.sv \
+		ip/cevero_dvfs/rtl/*.sv \
 		rtl/*.sv \
 		tb/*.sv \
 		+incdir+ip/ibex/vendor/lowrisc_ip/ip/prim/rtl \
