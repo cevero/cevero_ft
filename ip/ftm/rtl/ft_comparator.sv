@@ -18,7 +18,7 @@ module ft_comparator
 
 always_comb
     if(valid_instr_i)
-        if ({we_a_i,addr_a_i,data_a_i} ^ {we_b_i,addr_b_i,data_b_i})
+        if ({we_a_i,addr_a_i,data_a_i} != {we_b_i,addr_b_i,data_b_i})
             error_o = 1'b1;
     else begin
         addr_o = addr_a_i;
