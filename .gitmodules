@@ -4,3 +4,6 @@
 [submodule "ip/ibex"]
 	path = ip/ibex
 	url = https://github.com/cevero/ibex.git
+[submodule "ip/ftm"]
+	path = ip/ftm
+	url = https://github.com/cevero/ftm.git
