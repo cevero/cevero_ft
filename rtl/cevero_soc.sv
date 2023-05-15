@@ -6,6 +6,7 @@ module cevero_soc
 );
 
 logic 			test_en;
+logic 			error;
 
 logic [31:0]	hart_id;
 logic [31:0]	boot_addr;
@@ -27,11 +28,11 @@ logic [31:0]    instr_addr;
 logic [31:0]    instr_rdata;
 logic           instr_err;
 
-logic 			irq_software;	
-logic 			irq_timer;
-logic 			irq_external;
+logic 			    irq_software;	
+logic 			    irq_timer;
+logic 			    irq_external;
 logic [14:0]   	irq_fast;
-logic 			irq_nm;
+logic 			    irq_nm;
 
 logic			debug_req;
 
@@ -46,6 +47,7 @@ cevero_ft_core core(
 	.rst_ni					(rst_ni),
 
 	.test_en_i				(1'b0),    
+  .error_o          (error),
 
 	.hart_id_i				(32'b0),
 	.boot_addr_i			(32'h0),
@@ -67,18 +69,18 @@ cevero_ft_core core(
 	.data_rdata_i			(data_rdata),
 	.data_err_i				(1'b0),
 
-    .irq_software_i			(1'b0),
-    .irq_timer_i			(1'b0),
-    .irq_external_i			(1'b0),
-    .irq_fast_i				(15'b0),
-    .irq_nm_i				(1'b0), 
+  .irq_software_i		(1'b0),
+  .irq_timer_i			(1'b0),
+  .irq_external_i		(1'b0),
+  .irq_fast_i				(15'b0),
+  .irq_nm_i				  (1'b0), 
 
-	.debug_req_i			(1'b0),
+  .debug_req_i			(1'b0),
 
-    .fetch_enable_i			(fetch_enable_i),
-    .alert_minor_o			(alert_minor),
-    .alert_major_o			(alert_major),
-    .core_sleep_o			(core_sleep)
+  .fetch_enable_i	  (fetch_enable_i),
+  .alert_minor_o  	(alert_minor),
+  .alert_major_o  	(alert_major),
+  .core_sleep_o			(core_sleep)
 );
 	// inst memory
 	sp_ram
@@ -95,7 +97,7 @@ cevero_ft_core core(
 		.rvalid_o (instr_rvalid),
 		.addr_i   (instr_addr  ),
 		.we_i     (1'b0        ),
-        .be_i     (4'b1111     ),
+    .be_i     (4'b1111     ),
 		.rdata_o  (instr_rdata ),
 		.wdata_i  (32'b0       )
 	);
@@ -114,7 +116,7 @@ cevero_ft_core core(
 		.rvalid_o (data_rvalid),
 		.addr_i   (data_addr  ),
 		.we_i     (data_we    ),
-        .be_i     (data_be    ),
+    .be_i     (data_be    ),
 		.rdata_o  (data_rdata ),
 		.wdata_i  (data_wdata )
 	);

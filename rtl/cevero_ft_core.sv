@@ -1,10 +1,11 @@
 module cevero_ft_core
 (
 	// Clock and Reset
-    input  logic        clk_i,
+  input  logic        clk_i,
 	input  logic        rst_ni,
 
 	input  logic        test_en_i,     // enable all clock gates for testing
+  output logic        error_o,      // cevero ftm error signal
 
 	// Core ID, Cluster ID and boot address are considered more or less static
 	input  logic [31:0] hart_id_i,
@@ -29,38 +30,38 @@ module cevero_ft_core
 	input  logic [31:0] data_rdata_i,
 	input  logic        data_err_i,
 
-    input  logic        irq_software_i,
-    input  logic        irq_timer_i,
-    input  logic        irq_external_i,
-    input  logic [14:0] irq_fast_i,
-    input  logic        irq_nm_i, 
+  input  logic        irq_software_i,
+  input  logic        irq_timer_i,
+  input  logic        irq_external_i,
+  input  logic [14:0] irq_fast_i,
+  input  logic        irq_nm_i, 
 
 	// Debug Interface
 	input  logic        debug_req_i,
 
 	// CPU Control Signals
-    input  logic        fetch_enable_i,
-    output logic        alert_minor_o,
-    output logic        alert_major_o,
-    output logic        core_sleep_o
+  input  logic        fetch_enable_i,
+  output logic        alert_minor_o,
+  output logic        alert_major_o,
+  output logic        core_sleep_o
 );
 
-    //////////////////////////////////////////////////////////////////
-    //                        ___        _                   _      //
-    //   ___ ___  _ __ ___   / _ \   ___(_) __ _ _ __   __ _| |___  //
-    //  / __/ _ \| '__/ _ \ | | | | / __| |/ _` | '_ \ / _` | / __| //
-    // | (_| (_) | | |  __/ | |_| | \__ \ | (_| | | | | (_| | \__ \ //
-    //  \___\___/|_|  \___|  \___/  |___/_|\__, |_| |_|\__,_|_|___/ //
-    //                                     |___/                    //
-    //////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////
+  //                        ___        _                   _      //
+  //   ___ ___  _ __ ___   / _ \   ___(_) __ _ _ __   __ _| |___  //
+  //  / __/ _ \| '__/ _ \ | | | | / __| |/ _` | '_ \ / _` | / __| //
+  // | (_| (_) | | |  __/ | |_| | \__ \ | (_| | | | | (_| | \__ \ //
+  //  \___\___/|_|  \___|  \___/  |___/_|\__, |_| |_|\__,_|_|___/ //
+  //                                     |___/                    //
+  //////////////////////////////////////////////////////////////////
 
-    // Cevero signals
-    logic           regfile_we_0;
-    logic [4:0]     regfile_waddr_0;
-    logic [31:0]    regfile_wdata_0;
+  // Cevero signals
+  logic           regfile_we_0;
+  logic [4:0]     regfile_waddr_0;
+  logic [31:0]    regfile_wdata_0;
 	logic [31:0]    pc_o_0;
-	logic 		    recovery_done_0 ;
-	logic 			valid_instr_exec_0;
+	logic 		      recovery_done_0 ;
+	logic 		    	valid_instr_exec_0;
 	
 	logic           clock_en_0; //  = 1;    // enable clock, otherwise it is gated
 	logic           test_en_0; // = 0;     // enable all clock gates for testing
@@ -92,22 +93,22 @@ module cevero_ft_core
 	// Debug Interface
 	logic           debug_req_0;
 
-    //////////////////////////////////////////////////////////////
-    //                       _       _                   _      //
-    //   ___ ___  _ __ ___  / |  ___(_) __ _ _ __   __ _| |___  //
-    //  / __/ _ \| '__/ _ \ | | / __| |/ _` | '_ \ / _` | / __| //
-    // | (_| (_) | | |  __/ | | \__ \ | (_| | | | | (_| | \__ \ //
-    //  \___\___/|_|  \___| |_| |___/_|\__, |_| |_|\__,_|_|___/ //
-    //                                 |___/                    //
-    //////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////
+  //                       _       _                   _      //
+  //   ___ ___  _ __ ___  / |  ___(_) __ _ _ __   __ _| |___  //
+  //  / __/ _ \| '__/ _ \ | | / __| |/ _` | '_ \ / _` | / __| //
+  // | (_| (_) | | |  __/ | | \__ \ | (_| | | | | (_| | \__ \ //
+  //  \___\___/|_|  \___| |_| |___/_|\__, |_| |_|\__,_|_|___/ //
+  //                                 |___/                    //
+  //////////////////////////////////////////////////////////////
 
-    // Cevero signals
-    logic           regfile_we_1;
-    logic [4:0]     regfile_waddr_1;
-    logic [31:0]    regfile_wdata_1;
+  // Cevero signals
+  logic           regfile_we_1;
+  logic [4:0]     regfile_waddr_1;
+  logic [31:0]    regfile_wdata_1;
 	logic [31:0]    pc_o_1;
-	logic 		    recovery_done_1;
-	logic 			valid_instr_exec_1;
+	logic   		    recovery_done_1;
+	logic     			valid_instr_exec_1;
 
 	logic           test_en_1; // = 0;     // enable all clock gates for testing
 	
@@ -317,6 +318,7 @@ module cevero_ft_core
 		.done_i				(recovery_done), 	
 		.recover_o			(do_recover),
 		.reset_o 			(reset_cores),
+    .error_o        (error_o),
 		.recovering_o		(recovering)
     );
 
