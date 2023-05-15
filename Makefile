@@ -11,7 +11,7 @@ SIM = vsim
 TOP_LEVEL = $(shell basename `pwd` | tr '-' '_')
 WORK = work
 IBEXDIR=ip/ibex/rtl
-SVFILES=`ls $(IBEXDIR)/*.sv | awk '!/ibex_pkg.sv/ {print $0}'`
+SVFILES=`ls $(IBEXDIR)/*.sv | awk '!/.*_pkg.sv/ {print $0}'`
 
 default: all
 
@@ -24,7 +24,7 @@ build:
         vmap $(WORK) $(WORK); \
     fi
 # Compiles all verilog files in the "default" folders
-	$(CC) -sv -mfcu $(IBEXDIR)/ibex_pkg.sv $(SVFILES)\
+	$(CC) -sv -mfcu $(IBEXDIR)/ibex_pkg.sv $(IBEXDIR)/ibex_tracer_pkg.sv $(SVFILES)\
 		ip/soc_components/soc_utils/*.sv \
 		ip/soc_components/sp_ram/rtl/*.sv \
 		ip/ftm/rtl/*.sv \
@@ -47,4 +47,4 @@ clean:
 	rm -rf modelsim.ini transcript $(WORK) build/*
 
 # Makes sure none of the make targets are not mistaken by input files
-.PHONY: all run clean
+.PHONY: all build run clean
