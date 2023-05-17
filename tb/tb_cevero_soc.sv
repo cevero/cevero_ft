@@ -21,16 +21,15 @@ module tb_cevero_ft;
     initial begin
 
         $readmemb("./tb/accum.bin", dut.inst_mem.mem );
-/**
-        $display("time  | instr_addr  |  instr_rdata  |  error_count ");
-		$monitor(" %5t | %h | %h | %d ",
+        $display("time  | instr_addr  |  instr_rdata  |  error ");
+        $monitor(" %5t | %h | %h | %d ",
                     $time,
                     dut.instr_addr,
                     dut.instr_rdata,
-                    error_count
+                    dut.error
                 );
-**/
 
+        $assertoff;
         rst_n = 0;
         fetch_enable = 0;
 #20
