@@ -8,6 +8,7 @@ module tb_cevero_ft;
 
     logic can_inject_error = 0;
     logic err = 0;
+    int error_count = 0;
 
     cevero_soc dut(
         .clk_i              (clk),
@@ -17,11 +18,11 @@ module tb_cevero_ft;
 
 	// clock generation
     initial clk = 0;
-    int error_count = 0;
     // initial error_count = 0;
     always #5 clk = ~clk;
 
     initial begin
+        $assertoff;
         $readmemb("./tb/accum.bin", dut.inst_mem.mem );
 /**
         $display("time  | instr_addr  |  instr_rdata  |  error_count ");
@@ -48,24 +49,18 @@ module tb_cevero_ft;
     assign mem_flag = dut.data_mem.mem[0];
     assign mem_result = dut.data_mem.mem[1];
 
-	always @* begin : finish_condition
-		if (error_count == 20) begin
+	always_ff @(posedge clk) begin : finish_condition
+		if (mem_flag == 1'b1) begin
 			$display("result: %d",mem_result);
-			#5 $finish;
+			$finish;
 		end
     end
 
 // ------------ ERROR INJECTION --------------
 
-    logic [31:0] reg_list[8] = {
-        dut.core.core_0.instr_rdata_i, 
-        dut.core.core_0.instr_addr_o,
-        dut.core.core_0.data_rdata_i,
-        dut.core.core_0.data_addr_o,
-        dut.core.core_1.instr_rdata_i,
-        dut.core.core_1.instr_addr_o,
-        dut.core.core_1.data_rdata_i,
-        dut.core.core_1.data_addr_o
+    logic [31:0] reg_list[2] = {
+        dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1],
+        dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1]
     };
 
     int index;
@@ -77,54 +72,48 @@ module tb_cevero_ft;
         para uma distribuição gaussiana
     */
 	function logic [31:0] random_error_generator(input logic [31:0] my_reg);
-        int r;
         logic [31:0] fault_reg;
+        // int idx = $urandom_range(0, 31);
+        $display("[ERROR INSERTION] %t", $realtime);
+        $display("Sinal original %b", my_reg);
         
-        r = $urandom_range(0,20);
-        if (r < 3 && dut.core.instr_addr_0 < 32'h100) begin
-            r = $urandom_range(0,2);
-
-            $display("[ERROR INSERTION] %t", $realtime);
-            $display("Sinal original %b", my_reg);
-            
-            fault_reg = $urandom(my_reg);
-            
-            $display("Sinal injetado %b", fault_reg);
-            
-            return fault_reg;
-        end
-		return my_reg;
+        fault_reg = $urandom(my_reg);
+        
+        $display("Sinal injetado %b", fault_reg);
+        
+        return fault_reg;
 	endfunction
 
     always_ff @(posedge clk) begin
         if (err == 0)
-            index = $urandom_range(0, 7);
+            index = $urandom_range(0, 1);
             
         if (can_inject_error) begin
             err = 1;
 
             $display("index %d", index);
+            
             unique case (index)
-                0 : force dut.core.core_0.instr_rdata_i = random_error_generator(reg_list[index]); 
-                1 : force dut.core.core_0.instr_addr_o  = random_error_generator(reg_list[index]); 
-                2 : force dut.core.core_0.data_rdata_i  = random_error_generator(reg_list[index]); 
-                3 : force dut.core.core_0.data_addr_o   = random_error_generator(reg_list[index]); 
-                4 : force dut.core.core_1.instr_rdata_i = random_error_generator(reg_list[index]); 
-                5 : force dut.core.core_1.instr_addr_o  = random_error_generator(reg_list[index]); 
-                6 : force dut.core.core_1.data_rdata_i  = random_error_generator(reg_list[index]); 
-                7 : force dut.core.core_1.data_addr_o   = random_error_generator(reg_list[index]);
+                0 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1]); 
+                1 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1]); 
+                // 2 : force dut.core.core_0.data_rdata_i  = random_error_generator(reg_list[index]); 
+                // 3 : force dut.core.core_0.data_addr_o   = random_error_generator(reg_list[index]); 
+                // 4 : force dut.core.core_1.instr_rdata_i = random_error_generator(reg_list[index]); 
+                // 5 : force dut.core.core_1.instr_addr_o  = random_error_generator(reg_list[index]); 
+                // 6 : force dut.core.core_1.data_rdata_i  = random_error_generator(reg_list[index]); 
+                // 7 : force dut.core.core_1.data_addr_o   = random_error_generator(reg_list[index]);
             endcase
         end
         else begin
             unique case (index)
-                0 : release dut.core.core_0.instr_rdata_i; 
-                1 : release dut.core.core_0.instr_addr_o;  
-                2 : release dut.core.core_0.data_rdata_i;  
-                3 : release dut.core.core_0.data_addr_o;   
-                4 : release dut.core.core_1.instr_rdata_i; 
-                5 : release dut.core.core_1.instr_addr_o;  
-                6 : release dut.core.core_1.data_rdata_i;  
-                7 : release dut.core.core_1.data_addr_o;   
+                0 : release dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1]; 
+                1 : release dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1];  
+                // 2 : release dut.core.core_0.data_rdata_i;  
+                // 3 : release dut.core.core_0.data_addr_o;   
+                // 4 : release dut.core.core_1.instr_rdata_i; 
+                // 5 : release dut.core.core_1.instr_addr_o;  
+                // 6 : release dut.core.core_1.data_rdata_i;  
+                // 7 : release dut.core.core_1.data_addr_o;   
             endcase
 
             err = 0;
@@ -138,6 +127,6 @@ module tb_cevero_ft;
 		$display("[ERROR DETECTED]: %0d", error_count);
 	end
 
-    always_comb reg_list[index] = random_error_generator(reg_list[index]); 
+    // always_comb reg_list[index] = random_error_generator(reg_list[index]); 
 
 endmodule
