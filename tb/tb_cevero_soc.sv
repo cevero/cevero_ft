@@ -58,9 +58,15 @@ module tb_cevero_ft;
 
 // ------------ ERROR INJECTION --------------
 
-    logic [31:0] reg_list[2] = {
+    logic [31:0] reg_list[8] = {
         dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1],
-        dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1]
+        dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[2],
+        dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[3],
+        dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[4],
+        dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1],
+        dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[2],
+        dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[3],
+        dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[4]
     };
 
     int index;
@@ -73,11 +79,13 @@ module tb_cevero_ft;
     */
 	function logic [31:0] random_error_generator(input logic [31:0] my_reg);
         logic [31:0] fault_reg;
-        // int idx = $urandom_range(0, 31);
+        int idx;
+        idx = $urandom_range(0, 31);
         $display("[ERROR INSERTION] %t", $realtime);
         $display("Sinal original %b", my_reg);
         
-        fault_reg = $urandom(my_reg);
+        fault_reg = my_reg;
+        fault_reg[idx] = ~fault_reg[idx];
         
         $display("Sinal injetado %b", fault_reg);
         
@@ -86,7 +94,7 @@ module tb_cevero_ft;
 
     always_ff @(posedge clk) begin
         if (err == 0)
-            index = $urandom_range(0, 1);
+            index = $urandom_range(0, 7);
             
         if (can_inject_error) begin
             err = 1;
@@ -95,25 +103,25 @@ module tb_cevero_ft;
             
             unique case (index)
                 0 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1]); 
-                1 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1]); 
-                // 2 : force dut.core.core_0.data_rdata_i  = random_error_generator(reg_list[index]); 
-                // 3 : force dut.core.core_0.data_addr_o   = random_error_generator(reg_list[index]); 
-                // 4 : force dut.core.core_1.instr_rdata_i = random_error_generator(reg_list[index]); 
-                // 5 : force dut.core.core_1.instr_addr_o  = random_error_generator(reg_list[index]); 
-                // 6 : force dut.core.core_1.data_rdata_i  = random_error_generator(reg_list[index]); 
-                // 7 : force dut.core.core_1.data_addr_o   = random_error_generator(reg_list[index]);
+                1 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[2]); 
+                2 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[3]); 
+                3 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[4]); 
+                4 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1]); 
+                5 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[2]); 
+                6 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[3]); 
+                7 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[4]); 
             endcase
         end
         else begin
             unique case (index)
                 0 : release dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1]; 
-                1 : release dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1];  
-                // 2 : release dut.core.core_0.data_rdata_i;  
-                // 3 : release dut.core.core_0.data_addr_o;   
-                // 4 : release dut.core.core_1.instr_rdata_i; 
-                // 5 : release dut.core.core_1.instr_addr_o;  
-                // 6 : release dut.core.core_1.data_rdata_i;  
-                // 7 : release dut.core.core_1.data_addr_o;   
+                1 : release dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[2];  
+                2 : release dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[3];  
+                3 : release dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[4];  
+                4 : release dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1];  
+                5 : release dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[2];  
+                6 : release dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[3];  
+                7 : release dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[4];  
             endcase
 
             err = 0;
