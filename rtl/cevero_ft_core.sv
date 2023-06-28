@@ -322,7 +322,7 @@ module cevero_ft_core
 
 	ibex_core 
 	#(
-		.DmHaltAddr		     ( 32'h100       ) // Address where the core jumps when goes to the debug(recovery) routine
+		.DmHaltAddr		     ( 32'h200       ) // Address where the core jumps when goes to the debug(recovery) routine
 	)core_0(
         .regfile_we_o        ( regfile_we_0        ),
         .regfile_waddr_o     ( regfile_waddr_0     ),
@@ -373,7 +373,7 @@ module cevero_ft_core
 	);
 	ibex_core 
 	#(
-		.DmHaltAddr		     ( 32'h100       )
+		.DmHaltAddr		     ( 32'h200       )
 	)core_1(
         .regfile_we_o        ( regfile_we_1        ),
         .regfile_waddr_o     ( regfile_waddr_1     ),

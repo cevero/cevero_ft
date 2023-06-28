@@ -24,7 +24,7 @@ module tb_cevero_ft;
 
     initial begin
         $assertoff;
-        $readmemb("./tb/accum.bin", dut.inst_mem.mem );
+        $readmemb("./tb/rand.bin", dut.inst_mem.mem );
 /**
         $display("time  | instr_addr  |  instr_rdata  |  error_count ");
 		$monitor(" %5t | %h | %h | %d ",
@@ -42,7 +42,7 @@ module tb_cevero_ft;
         fetch_enable = 1;
 
 #100 // MUDAR O GATILHO PARA INSERIR A FALHA
-        can_inject_error=1;
+        can_inject_error=0;
 #10
         can_inject_error=0;
     end
@@ -53,7 +53,7 @@ module tb_cevero_ft;
 	always_ff @(posedge clk) begin : finish_condition
 		if (mem_flag == 1'b1) begin
 			$display("result: %d",mem_result);
-			// $finish;
+       $finish;
 		end
     end
 
