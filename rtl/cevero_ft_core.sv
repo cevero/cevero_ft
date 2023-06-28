@@ -1,5 +1,7 @@
 module cevero_ft_core
-(
+#(
+  parameter DmHaltAddr = 32'h100     // Address where the core jumps when goes to the debug(recovery) routine
+)(
 	// Clock and Reset
   input  logic        clk_i,
 	input  logic        rst_ni,
@@ -324,7 +326,7 @@ module cevero_ft_core
 
 	ibex_core 
 	#(
-		.DmHaltAddr		     ( 32'h100       ) // Address where the core jumps when goes to the debug(recovery) routine
+		.DmHaltAddr		     ( DmHaltAddr       ) 
 	)core_0(
         .regfile_we_o        ( regfile_we_0        ),
         .regfile_waddr_o     ( regfile_waddr_0     ),
@@ -375,7 +377,7 @@ module cevero_ft_core
 	);
 	ibex_core 
 	#(
-		.DmHaltAddr		     ( 32'h100       )
+		.DmHaltAddr		     ( DmHaltAddr       )
 	)core_1(
         .regfile_we_o        ( regfile_we_1        ),
         .regfile_waddr_o     ( regfile_waddr_1     ),
