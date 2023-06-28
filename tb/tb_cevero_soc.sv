@@ -9,6 +9,7 @@ module tb_cevero_ft;
     logic can_inject_error = 0;
     logic err = 0;
     int error_count = 0;
+    int testando;
 
     cevero_soc dut(
         .clk_i              (clk),
@@ -40,7 +41,7 @@ module tb_cevero_ft;
         rst_n = 1;
         fetch_enable = 1;
 
-#500 // MUDAR O GATILHO PARA INSERIR A FALHA
+#100 // MUDAR O GATILHO PARA INSERIR A FALHA
         can_inject_error=1;
 #10
         can_inject_error=0;
@@ -52,7 +53,7 @@ module tb_cevero_ft;
 	always_ff @(posedge clk) begin : finish_condition
 		if (mem_flag == 1'b1) begin
 			$display("result: %d",mem_result);
-			$finish;
+			// $finish;
 		end
     end
 
@@ -93,6 +94,8 @@ module tb_cevero_ft;
 	endfunction
 
     always_ff @(posedge clk) begin
+        testando = $dist_normal(0, 0, 1);
+        $display("Valor gerado %d", testando);
         if (err == 0)
             index = $urandom_range(0, 7);
             
