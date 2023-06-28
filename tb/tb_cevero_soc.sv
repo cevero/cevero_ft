@@ -22,10 +22,10 @@ module tb_cevero_ft;
 
         $readmemb("./tb/accum.bin", dut.inst_mem.mem );
         $display("time  | instr_addr  |  instr_rdata  |  error ");
-        $monitor(" %5t | %h | %h | %d ",
+        $monitor(" %5t | %h | %b | %d ",
                     $time,
-                    dut.instr_addr,
-                    dut.instr_rdata,
+                    dut.core.instr_addr_0,
+                    dut.core.instr_rdata_0,
                     dut.error
                 );
 

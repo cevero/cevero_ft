@@ -155,6 +155,13 @@ module cevero_ft_core
 	logic        reset_cores;
 	logic        recovering;
 
+	// Recovery instruction memory interface
+	logic           ftm_instr_req;
+	logic           ftm_instr_gnt;
+	logic           ftm_instr_rvalid;
+	logic [31:0]    ftm_instr_addr;
+	logic [31:0]    ftm_instr_rdata;
+
 	logic        ftm_data_req;
 	logic        ftm_data_gnt;
 	logic        ftm_data_rvalid;
@@ -182,26 +189,32 @@ module cevero_ft_core
 	assign hart_id_0 = hart_id_i;
 	assign boot_addr_0 = boot_addr_i;
 
-	// Instruction memory interface
-	assign instr_req_o = instr_req_0;
-	assign instr_gnt_0 = instr_gnt_i;
-	assign instr_rvalid_0 = instr_rvalid_i;
-	assign instr_addr_o = instr_addr_0;
-	assign instr_rdata_0 = instr_rdata_i;
-	assign instr_err_0 = instr_err_i;
+  // Instruction memory interface
+  initial
+    $readmemb("./tb/ftm_recovery.bin", ftm_instr_mem.mem );
 
-	// Data memory interface
-	/*
-	assign data_req_o = data_req_0;
-	assign data_gnt_0 = data_gnt_i;
-	assign data_rvalid_0 = data_rvalid_i;
-	assign data_we_o = data_we_0;
-	assign data_be_o = data_be_0;
-	assign data_addr_o = data_addr_0;
-	assign data_wdata_o = data_wdata_0;
-	assign data_rdata_0 = data_rdata_i;
-	assign data_err_0 = data_err_i;
-	*/
+  assign ftm_instr_req = instr_req_0;
+  assign instr_req_o = instr_req_0;
+  assign instr_addr_o = instr_addr_0;
+  assign instr_err_0 = instr_err_i;
+
+  // Translates debug addresses to recovery memory ROM
+  always_comb begin
+    if ((instr_addr_0 >= DmHaltAddr) && (instr_addr_0 <= DmHaltAddr+32'h200)) begin
+      ftm_instr_addr = instr_addr_0-DmHaltAddr;
+
+      instr_gnt_0 = ftm_instr_gnt;
+      instr_rvalid_0 = ftm_instr_rvalid;
+      instr_rdata_0 = ftm_instr_rdata;
+
+    end else begin
+      ftm_instr_addr = instr_addr_0;
+
+      instr_gnt_0 = instr_gnt_i;
+      instr_rvalid_0 = instr_rvalid_i;
+      instr_rdata_0 = instr_rdata_i;
+    end
+  end
 
 	assign debug_req_0 = do_recover;
 
@@ -323,6 +336,26 @@ module cevero_ft_core
     .error_o        (error_o),
 		.recovering_o		(recovering)
     );
+
+	// recover procedure memory
+  sp_ram
+  #(
+    .ADDR_WIDTH (32), 
+    .DATA_WIDTH (32), 
+    .NUM_WORDS  (512)
+    ) ftm_instr_mem (
+    .clk      (clk_i       ),
+    .rst_n    (rst_ni      ),
+    
+    .req_i    (ftm_instr_req   ),
+    .gnt_o    (ftm_instr_gnt   ),
+    .rvalid_o (ftm_instr_rvalid),
+    .addr_i   (ftm_instr_addr  ),
+    .we_i     (1'b0        ),
+    .be_i     (4'b1111     ),
+    .rdata_o  (ftm_instr_rdata ),
+    .wdata_i  (32'b0       )
+  );
 
 	ibex_core 
 	#(
