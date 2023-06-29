@@ -9,7 +9,7 @@ module tb_cevero_ft;
     logic can_inject_error = 0;
     logic err = 0;
     int error_count = 0;
-    int testando;
+    int nbits;
 
     cevero_soc dut(
         .clk_i              (clk),
@@ -42,7 +42,7 @@ module tb_cevero_ft;
         fetch_enable = 1;
 
 #100 // MUDAR O GATILHO PARA INSERIR A FALHA
-        can_inject_error=0;
+        can_inject_error=1;
 #10
         can_inject_error=0;
     end
@@ -53,7 +53,7 @@ module tb_cevero_ft;
 	always_ff @(posedge clk) begin : finish_condition
 		if (mem_flag == 1'b1) begin
 			$display("result: %d",mem_result);
-       $finish;
+            $finish;
 		end
     end
 
@@ -73,46 +73,58 @@ module tb_cevero_ft;
     int index;
     logic [31:0] data;
 
-    /* 
-        TODO preciso de colocar uma mascara de bit-flip, mas colocando uma probabilidade de desvio-padrao, assim verificando
-        como que o processador se comportaria, e coletando resultados sobre o comportamento conforme for alterando o desvio-padrao
-        para uma distribuição gaussiana
-    */
-	function logic [31:0] random_error_generator(input logic [31:0] my_reg);
+
+	function logic [31:0] random_error_generator(input logic [31:0] my_reg, input int bit_num);
         logic [31:0] fault_reg;
-        int idx;
+        int idx, old_idx, counter;
+        if (bit_num == 0)
+            return my_reg;
+
+        counter = 1;
         idx = $urandom_range(0, 31);
-        $display("[ERROR INSERTION] %t", $realtime);
         $display("Sinal original %b", my_reg);
-        
         fault_reg = my_reg;
+        if (bit_num < 0)
+            bit_num *= (-1);
+        
         fault_reg[idx] = ~fault_reg[idx];
-        
+        if (bit_num > 1) begin
+            old_idx = idx;
+            while (counter < bit_num) begin
+                if (idx == old_idx)
+                    idx = $urandom_range(0, 31);
+                else begin
+                    fault_reg[idx] = ~fault_reg[idx];
+                    old_idx = idx;
+                    counter += 1;
+                end
+            end
+        end
         $display("Sinal injetado %b", fault_reg);
-        
         return fault_reg;
 	endfunction
 
     always_ff @(posedge clk) begin
-        testando = $dist_normal(0, 0, 1);
-        $display("Valor gerado %d", testando);
+        // seed, mean and sd
+        nbits = $dist_normal(5, 0, 4);
         if (err == 0)
             index = $urandom_range(0, 7);
             
         if (can_inject_error) begin
+            $display("Valor gerado %d", nbits);
             err = 1;
 
             $display("index %d", index);
             
             unique case (index)
-                0 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1]); 
-                1 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[2]); 
-                2 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[3]); 
-                3 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[4]); 
-                4 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1]); 
-                5 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[2]); 
-                6 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[3]); 
-                7 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[4]); 
+                0 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1], nbits); 
+                1 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[2], nbits); 
+                2 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[3], nbits); 
+                3 : force dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_0.gen_regfile_ff.register_file_i.rf_reg[4], nbits); 
+                4 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1], nbits); 
+                5 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[2], nbits); 
+                6 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[3], nbits); 
+                7 : force dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[1] = random_error_generator(dut.core.core_1.gen_regfile_ff.register_file_i.rf_reg[4], nbits); 
             endcase
         end
         else begin
