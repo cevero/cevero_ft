@@ -20,14 +20,14 @@ module tb_cevero_ft;
 
     initial begin
 
-        $readmemb("./tb/accum.bin", dut.inst_mem.mem );
+        $readmemb("./tb/rand.bin", dut.inst_mem.mem );
         $display("time  | instr_addr  |  instr_rdata  |  error ");
-        $monitor(" %5t | %h | %b | %d ",
-                    $time,
-                    dut.core.instr_addr_0,
-                    dut.core.instr_rdata_0,
-                    dut.error
-                );
+        //$monitor(" %5t | %h | %b | %d ",
+                    //$time,
+                    //dut.core.instr_addr_0,
+                    //dut.core.instr_rdata_0,
+                    //dut.error
+                //);
 
         $assertoff;
         rst_n = 0;

@@ -1,6 +1,6 @@
 module cevero_ft_core
 #(
-  parameter DmHaltAddr = 32'h100     // Address where the core jumps when goes to the debug(recovery) routine
+  parameter DmHaltAddr = 32'h200     // Address where the core jumps when goes to the debug(recovery) routine
 )(
 	// Clock and Reset
   input  logic        clk_i,
