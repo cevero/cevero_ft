@@ -11,6 +11,12 @@ SIM = vsim
 TOP_LEVEL = $(shell basename `pwd` | tr '-' '_')
 WORK = work
 IBEXDIR=ip/ibex/rtl
+
+#teste
+PRIM_RAM_RTL = ip/ibex/vendor/lowrisc_ip/ip/prim/rtl/prim_ram_1p_pkg.sv
+PRIM_SECDED_RTL = ip/ibex/vendor/lowrisc_ip/ip/prim/rtl/prim_secded_pkg.sv
+#testefim
+
 SVFILES=`ls $(IBEXDIR)/*.sv | awk '!/ibex_pkg.sv/ {print $0}'`
 
 default: all
@@ -23,6 +29,7 @@ build:
         vlib $(WORK); \
         vmap $(WORK) $(WORK); \
     fi
+
 # Compiles all verilog files in the "default" folders
 	$(CC) -sv -mfcu $(IBEXDIR)/ibex_pkg.sv $(SVFILES)\
 		ip/soc_components/soc_utils/*.sv \
@@ -32,8 +39,9 @@ build:
 		rtl/*.sv \
 		tb/*.sv \
 		+incdir+ip/ibex/vendor/lowrisc_ip/ip/prim/rtl \
-		+incdir+ip/ibex/dv/fcov  \
-		+incdir+dv/uvm/core_ibex/common/prim
+		+incdir+ip/ibex/dv/fcov \
+		+incdir+dv/uvm/core_ibex/common/prim \
+		+incdir+ip/ibex/vendor/lowrisc_ip/dv/sv/dv_utils
 
 # Executes the simulation in batch mode using the commands on the script/run.do
 # file.
