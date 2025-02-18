@@ -12,10 +12,9 @@ TOP_LEVEL = $(shell basename `pwd` | tr '-' '_')
 WORK = work
 IBEXDIR=ip/ibex/rtl
 
-#teste
 PRIM_RAM_RTL = ip/ibex/vendor/lowrisc_ip/ip/prim/rtl/prim_ram_1p_pkg.sv
 PRIM_SECDED_RTL = ip/ibex/vendor/lowrisc_ip/ip/prim/rtl/prim_secded_pkg.sv
-#testefim
+IBEX_TRACER_PKG = ip/ibex/rtl/ibex_tracer_pkg.sv
 
 SVFILES=`ls $(IBEXDIR)/*.sv | awk '!/ibex_pkg.sv/ {print $0}'`
 
@@ -31,7 +30,11 @@ build:
     fi
 
 # Compiles all verilog files in the "default" folders
-	$(CC) -sv -mfcu $(IBEXDIR)/ibex_pkg.sv $(SVFILES)\
+	$(CC) -sv -mfcu $(IBEXDIR)/ibex_pkg.sv \
+		$(PRIM_RAM_RTL) \
+		$(PRIM_SECDED_RTL) \
+		$(IBEX_TRACER_PKG) \
+		$(SVFILES)\
 		ip/soc_components/soc_utils/*.sv \
 		ip/soc_components/sp_ram/rtl/*.sv \
 		ip/ftm/rtl/*.sv \
