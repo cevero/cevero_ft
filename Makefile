@@ -16,6 +16,9 @@ PRIM_RAM_RTL = ip/ibex/vendor/lowrisc_ip/ip/prim/rtl/prim_ram_1p_pkg.sv
 PRIM_SECDED_RTL = ip/ibex/vendor/lowrisc_ip/ip/prim/rtl/prim_secded_pkg.sv
 IBEX_TRACER_PKG = ip/ibex/rtl/ibex_tracer_pkg.sv
 
+PRIM_BUF = ip/ibex/dv/uvm/core_ibex/common/prim/prim_buf.sv
+PRIM_GENERIC = ip/ibex/vendor/lowrisc_ip/ip/prim_generic/rtl/prim_generic_buf.sv
+
 SVFILES=`ls $(IBEXDIR)/*.sv | awk '!/ibex_pkg.sv/ {print $0}'`
 
 default: all
@@ -33,8 +36,10 @@ build:
 	$(CC) -sv -mfcu $(IBEXDIR)/ibex_pkg.sv \
 		$(PRIM_RAM_RTL) \
 		$(PRIM_SECDED_RTL) \
+		$(PRIM_BUF) \
+		$(PRIM_GENERIC) \
 		$(IBEX_TRACER_PKG) \
-		$(SVFILES)\
+		$(SVFILES) \
 		ip/soc_components/soc_utils/*.sv \
 		ip/soc_components/sp_ram/rtl/*.sv \
 		ip/ftm/rtl/*.sv \
@@ -44,7 +49,7 @@ build:
 		+incdir+ip/ibex/vendor/lowrisc_ip/ip/prim/rtl \
 		+incdir+ip/ibex/dv/fcov \
 		+incdir+dv/uvm/core_ibex/common/prim \
-		+incdir+ip/ibex/vendor/lowrisc_ip/dv/sv/dv_utils
+		+incdir+ip/ibex/vendor/lowrisc_ip/dv/sv/dv_utils \
 
 # Executes the simulation in batch mode using the commands on the script/run.do
 # file.

@@ -21,7 +21,7 @@ module tb_cevero_ft;
     initial begin
 
         $readmemb("./tb/accum.bin", dut.inst_mem.mem );
-/**
+
         $display("time  | instr_addr  |  instr_rdata  |  error_count ");
 		$monitor(" %5t | %h | %h | %d ",
                     $time,
@@ -29,7 +29,7 @@ module tb_cevero_ft;
                     dut.instr_rdata,
                     error_count
                 );
-**/
+
 
         rst_n = 0;
         fetch_enable = 0;
@@ -87,7 +87,7 @@ module tb_cevero_ft;
 	always_ff @( posedge dut.core.ftm.error ) begin : countError
 		error_count = error_count + 1;
 		$display("[ERROR DETECTED] %d", error_count);
-		$display("Executing inst with pc = %h", dut.core.core_0.pc_id);
+		$display("Executing inst with pc = %h", dut.core.core_0.u_ibex_core.pc_id);
 	end
 
 endmodule

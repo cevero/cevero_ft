@@ -320,7 +320,7 @@ module cevero_ft_core
 		.recovering_o		(recovering)
     );
 
-	ibex_core 
+	ibex_top 
 	#(
 		.DmHaltAddr		     ( 32'h100       ) // Address where the core jumps when goes to the debug(recovery) routine
 	)core_0(
@@ -333,8 +333,10 @@ module cevero_ft_core
 
 		.clk_i               ( clk_i               ),
 		.rst_ni              ( ~reset_cores & rst_ni ),
+
 		.test_en_i           ( test_en_0           ),
-		
+		.ram_cfg_i           (),
+
 		.hart_id_i           ( hart_id_0           ),
 		.boot_addr_i         ( boot_addr_0         ),
 		
@@ -343,7 +345,8 @@ module cevero_ft_core
 		.instr_rvalid_i      ( instr_rvalid_0      ),
 		.instr_addr_o        ( instr_addr_0        ),
 		.instr_rdata_i       ( instr_rdata_0       ),
-		.instr_err_i    	 ( instr_err_0		   ),
+		.instr_rdata_intg_i  (),
+		.instr_err_i    	( instr_err_0	   ),
 		
 		.data_req_o          ( data_req_0          ),
 		.data_gnt_i          ( data_gnt_0          ),
@@ -352,7 +355,9 @@ module cevero_ft_core
 		.data_be_o           ( data_be_0           ),
 		.data_addr_o         ( data_addr_0         ),
 		.data_wdata_o        ( data_wdata_0        ),
+		.data_wdata_intg_o   (),
 		.data_rdata_i        ( data_rdata_0        ),
+		.data_rdata_intg_i   (),
 		.data_err_i          ( data_err_0          ),
 
 		// Interrupt inputs
@@ -362,16 +367,28 @@ module cevero_ft_core
 		.irq_fast_i     (irq_fast_i),
 		.irq_nm_i       (irq_nm_i),
 
+		// Scrambling interface
+		.scramble_key_valid_i  (),
+		.scramble_key_i  (),
+		.scramble_nonce_i  (),
+		.scramble_req_o  (),
+
 		// Debug interface
 		.debug_req_i    (debug_req_0),
+		.crash_dump_o (),
+		.double_fault_seen_o  (),
 
 		// Special control signals
 		.fetch_enable_i (fetch_enable_i),
 		.alert_minor_o  (),
-		.alert_major_o  (),
-		.core_sleep_o   ()
+		.alert_major_internal_o  (),
+		.alert_major_bus_o  (),
+		.core_sleep_o   (),
+
+		// DFT bypass controls
+		.scan_rst_ni  ()
 	);
-	ibex_core 
+	ibex_top
 	#(
 		.DmHaltAddr		     ( 32'h100       )
 	)core_1(
@@ -384,7 +401,9 @@ module cevero_ft_core
 
 		.clk_i               ( clk_i               ),
 		.rst_ni              ( ~reset_cores & rst_ni  ),
+
 		.test_en_i           ( test_en_1           ),
+		.ram_cfg_i           (),
 
 		.hart_id_i           ( hart_id_1           ),
 		.boot_addr_i         ( boot_addr_1         ),
@@ -394,6 +413,7 @@ module cevero_ft_core
 		.instr_rvalid_i      ( instr_rvalid_1      ),
 		.instr_addr_o        ( instr_addr_1        ),
 		.instr_rdata_i       ( instr_rdata_1       ),
+		.instr_rdata_intg_i  (),
 		.instr_err_i         ( instr_err_1       ),
 		
 		.data_req_o          ( data_req_1          ),
@@ -403,10 +423,15 @@ module cevero_ft_core
 		.data_be_o           ( data_be_1           ),
 		.data_addr_o         ( data_addr_1         ),
 		.data_wdata_o        ( data_wdata_1        ),
+		.data_wdata_intg_o   (),
 		.data_rdata_i        ( data_rdata_1        ),
+		.data_rdata_intg_i   (),
 		.data_err_i          ( data_err_1          ),
 		
+		// Debug interface
 		.debug_req_i         ( debug_req_1         ),
+		.crash_dump_o (),
+		.double_fault_seen_o  (),
 
 		// Interrupt inputs
 		.irq_software_i (irq_software_i),
@@ -415,11 +440,21 @@ module cevero_ft_core
 		.irq_fast_i     (irq_fast_i),
 		.irq_nm_i       (irq_nm_i),
 
+		// Scrambling interface
+		.scramble_key_valid_i  (),
+		.scramble_key_i  (),
+		.scramble_nonce_i  (),
+		.scramble_req_o  (),
+
 		// Special control signals
 		.fetch_enable_i (fetch_enable_i),
 		.alert_minor_o  (),
-		.alert_major_o  (),
-		.core_sleep_o   ()
+		.alert_major_internal_o  (),
+		.alert_major_bus_o  (),
+		.core_sleep_o   (),
+
+		// DFT bypass controls
+		.scan_rst_ni  ()
 	);
 
 endmodule
