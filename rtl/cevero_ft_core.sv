@@ -335,7 +335,7 @@ module cevero_ft_core
 		.rst_ni              ( ~reset_cores & rst_ni ),
 
 		.test_en_i           ( test_en_0           ),
-		.ram_cfg_i           (),
+		.ram_cfg_i           (prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
 
 		.hart_id_i           ( hart_id_0           ),
 		.boot_addr_i         ( boot_addr_0         ),
@@ -368,9 +368,9 @@ module cevero_ft_core
 		.irq_nm_i       (irq_nm_i),
 
 		// Scrambling interface
-		.scramble_key_valid_i  (),
-		.scramble_key_i  (),
-		.scramble_nonce_i  (),
+		.scramble_key_valid_i  ('0),
+		.scramble_key_i  ('0),
+		.scramble_nonce_i  ('0),
 		.scramble_req_o  (),
 
 		// Debug interface
@@ -403,7 +403,7 @@ module cevero_ft_core
 		.rst_ni              ( ~reset_cores & rst_ni  ),
 
 		.test_en_i           ( test_en_1           ),
-		.ram_cfg_i           (),
+		.ram_cfg_i           (prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
 
 		.hart_id_i           ( hart_id_1           ),
 		.boot_addr_i         ( boot_addr_1         ),
@@ -441,9 +441,9 @@ module cevero_ft_core
 		.irq_nm_i       (irq_nm_i),
 
 		// Scrambling interface
-		.scramble_key_valid_i  (),
-		.scramble_key_i  (),
-		.scramble_nonce_i  (),
+		.scramble_key_valid_i  ('0),
+		.scramble_key_i  ('0),
+		.scramble_nonce_i  ('0),
 		.scramble_req_o  (),
 
 		// Special control signals
