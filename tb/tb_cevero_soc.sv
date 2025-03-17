@@ -1,8 +1,10 @@
+import ibex_pkg::*;
+
 module tb_cevero_ft;
 
     logic 			clk;
     logic 			rst_n;
-    logic           fetch_enable;
+    ibex_mubi_t           fetch_enable;
     logic [31:0]    mem_flag;
     logic [31:0]    mem_result;
 

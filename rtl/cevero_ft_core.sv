@@ -1,3 +1,5 @@
+import ibex_pkg::*;
+
 module cevero_ft_core
 (
 	// Clock and Reset
@@ -39,7 +41,7 @@ module cevero_ft_core
 	input  logic        debug_req_i,
 
 	// CPU Control Signals
-    input  logic        fetch_enable_i,
+    input  ibex_mubi_t        fetch_enable_i,
     output logic        alert_minor_o,
     output logic        alert_major_o,
     output logic        core_sleep_o
@@ -345,7 +347,7 @@ module cevero_ft_core
 		.instr_rvalid_i      ( instr_rvalid_0      ),
 		.instr_addr_o        ( instr_addr_0        ),
 		.instr_rdata_i       ( instr_rdata_0       ),
-		.instr_rdata_intg_i  (),
+		.instr_rdata_intg_i  ('0),
 		.instr_err_i    	( instr_err_0	   ),
 		
 		.data_req_o          ( data_req_0          ),
@@ -413,7 +415,7 @@ module cevero_ft_core
 		.instr_rvalid_i      ( instr_rvalid_1      ),
 		.instr_addr_o        ( instr_addr_1        ),
 		.instr_rdata_i       ( instr_rdata_1       ),
-		.instr_rdata_intg_i  (),
+		.instr_rdata_intg_i  ('0),
 		.instr_err_i         ( instr_err_1       ),
 		
 		.data_req_o          ( data_req_1          ),

@@ -1,8 +1,10 @@
+import ibex_pkg::*;
+
 module cevero_soc
 #()(
 	input  logic        clk_i,
 	input  logic        rst_ni,
-	input  logic        fetch_enable_i
+	input  ibex_mubi_t  fetch_enable_i
 );
 
 logic 			test_en;
